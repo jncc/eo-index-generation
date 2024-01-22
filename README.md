@@ -4,7 +4,8 @@
 * Get ARD product from CEDA archive - modify existing finder script
 * Produce indicies for s1 and s2 frames based on preconfigured selection - config file
 * Produce metadata file for each output
-* Validate output using a task based on the exisiting hab change detection validation script
+* Validate output using a task based on the exisiting hab change detection validation script 
+  * indexes-qc.py needs refactoring to have a parser & rule style.
 * Move outputs to ceda ingestion area
 
 # requirements - optional
