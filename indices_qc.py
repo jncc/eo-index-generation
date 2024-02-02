@@ -36,6 +36,7 @@ def run(startdate, enddate, inputdir, outputdir, arddir):
                     filename = os.path.join(lsfilepath, file)
                     print(f"QCing file {filename}")
                     
+                    # determine if tif file is an index
                     filesize = get_size(filename)
                     if any((match := substring) in file for substring in indexs):
                         index = match
@@ -46,6 +47,7 @@ def run(startdate, enddate, inputdir, outputdir, arddir):
 
                     filepath_joiner = f'{arddir}/{file_splitter[0]}/{file_splitter[1]}/{file_splitter[2]}/{file_splitter[3]}'
 
+                    # figure out the name of the source ard file
                     if filepath_joiner.endswith('_NBR.tif'):
                         ardfilename = f'{filepath_joiner[:-8]}_sat.tif'
                     else:
@@ -54,17 +56,18 @@ def run(startdate, enddate, inputdir, outputdir, arddir):
                     if os.path.exists(lsfilepath):
                         print(f'associated ARD file {ardpath}')
                         
+                        # create a data row for this file
                         tuple_data = (filename, filesize, index, file, ardpath)
                         lsdict.append(tuple_data)
                     else: 
                         print(f'associated ARD file {ardpath} NOT FOUND')
-
-
+                        
+    # run tests in parallel for each row in lsdict
     #pool = mp.Pool(mp.cpu_count()) # perhaps if you want to speed up - but JASMIN might complain
     pool = mp.Pool(4)
     results = pool.map(multi_run_wrapper, lsdict)
 
-
+    # print results of the tests 
     df = pd.DataFrame.from_dict(results)
     df['Check'] = df.index.isin(df.sample(frac=0.05, random_state=1).index) # 5% check
     df.to_csv(outputpath, index=False)
@@ -124,9 +127,12 @@ def get_size(path):
 
 def get_stats(filename_path, filesize, index, file, ardfilename):
     filename_parts = filename_path.split('_')
+    
+    # determine if the file is a valid cog
     valid_cog, _, _ = rio_cogeo.cog_validate(filename_path)
+    
     with rasterio.open(filename_path) as dataset:
-        meta = dataset.profile
+        meta = dataset.profile # width, hight, crs etc
         indexBounds = dataset.bounds # get boundary extent
         idt = dataset.transform # get transformation params
         image = dataset.read()
@@ -134,7 +140,9 @@ def get_stats(filename_path, filesize, index, file, ardfilename):
             overview = True
         else:
             overview = False
+        # Set all nodata values to 0
         image[image == meta['nodata']] = 0
+        
         meta['min'] = image.min()
         meta['max'] = image.max()
         meta['path'] = filename_path
@@ -144,14 +152,21 @@ def get_stats(filename_path, filesize, index, file, ardfilename):
         meta['QC_date'] = date.today()
         datetime_ard = datetime.strptime(str(filename_parts[3]), '%Y%m%d')
         meta['ARD_date'] = datetime_ard
+        
+        
+        # pixel values in range 
         if meta['min'] > -1 and meta['max'] < 1:
             meta['within_range'] = 'Y'
         else:
             meta['within_range'] = 'N'
+            
+        # title validitiy lenght check?? Do we care / regex
         if file.endswith('_NBR.tif'):  # assumes others are NDVI NDMI NDWI
             meta['tile'] = file[:-8]
         else:
             meta['tile'] = file[:-9]
+            
+        # cog check
         meta['valid_cog'] = valid_cog
         with rasterio.open(ardfilename) as arddataset:
             ardBounds = arddataset.bounds # get boundary extent

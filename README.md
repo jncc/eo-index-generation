@@ -40,6 +40,7 @@ spec.loader.exec_module(foo)
 foo.MyClass() -->
 
 ```
+* wrap up ceda_ard_finder like this : https://keremkoseoglu.wordpress.com/2020/04/05/reusing-python-packages-over-github/
 * Call CreateSymlinks task?
 * Use product name to determine s1 or s2 index creation task
 * Create container job for each symlinked product to create indicies, target task determined by convention of ard prod name
