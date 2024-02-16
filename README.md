@@ -52,3 +52,5 @@ foo.MyClass() -->
 * validate output.
 
 
+*Pip freeze won't capture the ceda_ard_finder git source properly and requirements.txt has to be manually edited.*
+This article describes the mechanism for doing so (not tested) https://stackoverflow.com/questions/16584552/how-to-state-in-requirements-txt-a-direct-github-source
