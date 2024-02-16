@@ -4,6 +4,7 @@ import os
 from luigi.util import requires
 from ceda_ard_finder import CreateSymlinks
 
+## probably need to call CreateSymLinks directly from run to specify correct output path.
 @requires(CreateSymlinks)
 class GetArdProducts(luigi.Task):
     stateLocation = luigi.Parameter()
