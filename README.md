@@ -11,7 +11,7 @@
 
 # requirements - optional
 
-* Implement scheduling on jasmin (rose/cylc)
+* Implement scheduling on jasmin (rose/cylc) - https://help.jasmin.ac.uk/article/147-cylc-rose-on-jasmin
 * Email run report
   * Produce report in public folder
   * Run AWS process to forward report from public folder using SES
@@ -24,22 +24,7 @@
 # Orchestration
 
 ## import cdse search modules
-
-<!-- Import module using the following mech:
-
-```
-
-import .util
-import sys
-
-spec = importlib.util.spec_from_file_location("module.name", "/path/to/file.py")
-foo = importlib.util.module_from_spec(spec)
-sys.modules["module.name"] = foo
-spec.loader.exec_module(foo)
-
-foo.MyClass() -->
-
-```
+`
 * wrap up ceda_ard_finder like this : https://keremkoseoglu.wordpress.com/2020/04/05/reusing-python-packages-over-github/
 * Call CreateSymlinks task?
 * Use product name to determine s1 or s2 index creation task
