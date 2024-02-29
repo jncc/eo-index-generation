@@ -1,7 +1,7 @@
 affine==2.4.0
 annotated-types==0.6.0
 attrs==23.2.0
-ceda_ard_finder @ git+https://github.com/jncc/ceda_ard_finder.git@main
+ceda_ard_finder @ git+ssh://git@github.com/jncc/ceda_ard_finder.git@main
 certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
