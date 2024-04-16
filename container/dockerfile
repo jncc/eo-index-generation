@@ -1,0 +1,83 @@
+FROM ubuntu:20.04
+
+#install package management
+RUN apt update && apt install -y software-properties-common \
+    dirmngr \
+    apt-transport-https \
+    lsb-release \
+    ca-certificates
+
+# Install package requirements
+RUN gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+    && gpg -a --export E298A3A825C0D65DFD57CBB651716619E084DAB9 | apt-key add - \
+    && apt-add-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' \
+    && apt-add-repository ppa:ubuntugis/ubuntugis-unstable \
+    && apt-get update \
+    && apt-get install -y \
+    r-recommended=4.0.3-1.2004.0 \
+    r-base=4.0.3-1.2004.0 \
+    gdal-bin \
+    libgdal-dev \
+    curl \
+    python-is-python3 \
+    python3-pip \
+    python3-virtualenv \
+    build-essential \
+    zlib1g-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libssl-dev \
+    libreadline-dev \
+    libffi-dev wget \
+    libxml2-dev \
+    libpng-dev \
+    libudunits2-dev \
+    gfortran
+
+ENV PROJ_LIB=/usr/share/proj
+    
+# Install the R dependancies
+WORKDIR /app/r-functions/
+
+RUN mkdir -p /app/renv/ \
+     && R -e "if (!requireNamespace('remotes')) install.packages('remotes'); remotes::install_github('rstudio/renv')" 
+
+COPY app/r-functions/renv/ ./renv/
+COPY app/r-functions/.Rprofile .
+
+ENV RENV_PATHS_ROOT=/app/renv
+
+RUN R -e "renv::consent(provided = TRUE); renv::activate(); renv::restore(lockfile='/app/r-functions/renv/renv.lock')"
+
+# Install app
+WORKDIR /app
+
+# Install workflow dependencies
+COPY app/workflow/requirements.txt ./workflow/
+RUN pip3 install -r /app/workflow/requirements.txt
+
+# Copy the R functions
+COPY app/r-functions/*.R ./r-functions/
+
+# Copy the Workflow
+COPY app/workflow/ ./workflow
+
+# Bring in the container config
+RUN mkdir /etc/luigi/
+COPY config/app/workflow/workflow-luigi.cfg /etc/luigi/luigi.cfg
+
+#Initialise startup script and create mount points for Singularity
+COPY app/exec.sh ./
+RUN chmod +rx /app/exec.sh \
+    && mkdir -p /input/ \
+    && mkdir -p /static/ \
+    && mkdir -p /state/ \ 
+    && mkdir -p /working/ \
+    && mkdir -p /output/ 
+
+COPY config/app/BUILD-VERSION.txt /app
+
+EXPOSE 8082
+
+ENTRYPOINT ["/app/exec.sh"]

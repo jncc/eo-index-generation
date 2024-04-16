@@ -1,0 +1,16 @@
+#Setting up R environment (with package versions)
+renv::activate()
+
+#Load all required packages from installed versions
+require(dplyr)
+require(magrittr)
+require(raster)
+require(optparse)
+require(stringr)
+require(fasterize)
+require(rjson)
+require(sf)
+require(lubridate)
+require(zoo)
+require(tmap)
+require(rgdal)
