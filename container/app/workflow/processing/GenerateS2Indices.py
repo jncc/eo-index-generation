@@ -9,17 +9,13 @@ import logging
 from luigi.util import requires
 from luigi import LocalTarget
 from functional import seq
-# from workflow.processing.MaskGranule import MaskGranule
-# from workflow.processing.GenerateSpatialFrameworkSubset import GenerateSpatialFrameworkSubsetForS2
-
+from workflow.processing.PrepareProcessing import PrepareProcessing
+from workflow.processing.MaskGranule import MaskGranule
 
 log = logging.getLogger('luigi-interface')
 
-# Make task dependent on spatial framework subset to ensure no time
-# is wasted computing indices for a granule that has no polygons
 
-
-# @requires(MaskGranule, GenerateSpatialFrameworkSubsetForS2)
+@requires(MaskGranule)
 class GenerateS2Indices(luigi.Task):
     sentinelFrameId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
@@ -37,7 +33,7 @@ class GenerateS2Indices(luigi.Task):
     swirBand2 = luigi.IntParameter(default=defaults.S2IndexDefaults["swirBand2"])
 
     def run(self):
-        with self.input()[0].open('r') as pp:
+        with self.input().open('r') as pp:
             imagePath = (json.load(pp))["maskedArdFile"]
 
         robjects.r(f"setwd('{self.rFunctionRoot}')")

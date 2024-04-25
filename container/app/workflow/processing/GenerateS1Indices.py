@@ -11,15 +11,11 @@ from luigi.parameter import EnumListParameter
 from luigi import LocalTarget
 from functional import seq
 from workflow.processing.PrepareProcessing import PrepareProcessing
-from workflow.processing.GenerateSpatialFrameworkSubset import GenerateSpatialFrameworkSubsetForS1
 
 log = logging.getLogger('luigi-interface')
 
-# Make task dependent on spatial framework subset to ensure no time
-# is wasted computing indices for a granule that has no polygons
 
-
-@requires(PrepareProcessing, GenerateSpatialFrameworkSubsetForS1)
+@requires(PrepareProcessing)
 class GenerateS1Indices(luigi.Task):
     sentinelFrameId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
@@ -34,7 +30,7 @@ class GenerateS1Indices(luigi.Task):
         default=defaults.S1IndexDefaults["defaultIndices"])
 
     def run(self):
-        with self.input()[0].open('r') as pp:
+        with self.input().open('r') as pp:
             ardFiles = (json.load(pp))["ardFiles"]
 
         robjects.r(f"setwd('{self.rFunctionRoot}')")
