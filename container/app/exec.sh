@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RENV_PATHS_ROOT=app/r-functions/renv
+RENV_PATHS_ROOT=/app/renv
 umask 002
 cd /app
-PYTHONPATH='.' luigi "$@"
+PYTHONPATH='.' luigi --module workflow "$@"

@@ -28,7 +28,7 @@ class MaskGranule(luigi.Task):
         r_source = robjects.r['source']
         r_source(os.path.join(self.rFunctionRoot, 'renv/activate.R'))
 
-        functionPath = os.path.join(self.rFunctionRoot, "FunctionMaskGranule.R")
+        functionPath = os.path.join(self.rFunctionRoot, "workflow/FunctionMaskGranule.R")
         r_source(functionPath)
 
         r_maskGranule = robjects.r['maskGranule']

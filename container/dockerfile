@@ -1,54 +1,59 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04 AS workflow
 
 #install package management
 RUN apt update && apt install -y software-properties-common \
     dirmngr \
     apt-transport-https \
     lsb-release \
-    ca-certificates
+    ca-certificates \
+    wget \
+    sudo \
+    apt-utils \
+    dialog 
+
+# set timezone for package installs
+ENV TZ=Europe/London
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install package requirements
-RUN gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
-    && gpg -a --export E298A3A825C0D65DFD57CBB651716619E084DAB9 | apt-key add - \
-    && apt-add-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' \
-    && apt-add-repository ppa:ubuntugis/ubuntugis-unstable \
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+    && gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 871920D1991BC93C \
+    && gpg -a --export 871920D1991BC93C | apt-key add - \
+    && apt-add-repository -y "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+    && apt-add-repository -y ppa:ubuntugis/ubuntugis-unstable \
     && apt-get update \
     && apt-get install -y \
-    r-recommended=4.0.3-1.2004.0 \
-    r-base=4.0.3-1.2004.0 \
+    r-recommended \
+    r-base \
     gdal-bin \
     libgdal-dev \
     curl \
     python-is-python3 \
     python3-pip \
     python3-virtualenv \
+    python3-rpy2 \
+    python3-cffi \
     build-essential \
-    zlib1g-dev \
-    libncurses5-dev \
-    libgdbm-dev \
-    libnss3-dev \
-    libssl-dev \
-    libreadline-dev \
-    libffi-dev wget \
-    libxml2-dev \
-    libpng-dev \
+    libbz2-dev \
     libudunits2-dev \
-    gfortran
+    gfortran \
+    libmagick++-dev
 
 ENV PROJ_LIB=/usr/share/proj
     
 # Install the R dependancies
 WORKDIR /app/r-functions/
 
-RUN mkdir -p /app/renv/ \
-     && R -e "if (!requireNamespace('remotes')) install.packages('remotes'); remotes::install_github('rstudio/renv')" 
+RUN mkdir -p /app/renv/
 
 COPY app/r-functions/renv/ ./renv/
 COPY app/r-functions/.Rprofile .
+COPY app/r-functions/renv.lock .
 
 ENV RENV_PATHS_ROOT=/app/renv
 
-RUN R -e "renv::consent(provided = TRUE); renv::activate(); renv::restore(lockfile='/app/r-functions/renv/renv.lock')"
+RUN  R -e "if (!requireNamespace('remotes')) install.packages('remotes'); remotes::install_github('rstudio/renv')"  && \
+    R -e "renv::consent(provided = TRUE); renv::activate(); renv::restore(lockfile='/app/r-functions/renv.lock')"
 
 # Install app
 WORKDIR /app
@@ -58,7 +63,7 @@ COPY app/workflow/requirements.txt ./workflow/
 RUN pip3 install -r /app/workflow/requirements.txt
 
 # Copy the R functions
-COPY app/r-functions/*.R ./r-functions/
+COPY app/r-functions/workflow/*.R ./r-functions/workflow/
 
 # Copy the Workflow
 COPY app/workflow/ ./workflow
@@ -81,3 +86,39 @@ COPY config/app/BUILD-VERSION.txt /app
 EXPOSE 8082
 
 ENTRYPOINT ["/app/exec.sh"]
+
+FROM workflow AS devcontainer
+
+# Complete development environment.
+
+RUN apt update && apt install -y git \
+    lsb-release build-essential pkg-config autoconf automake \
+    libtool bison flex sed perl parallel libunwind-dev curl vim
+
+# This Dockerfile adds a non-root 'vscode' user with sudo access. However, for Linux,
+# this user's GID/UID must match your local user UID/GID to avoid permission issues
+# with bind mounts. Update USER_UID / USER_GID if yours is not 1000. See
+# https://aka.ms/vscode-remote/containers/non-root-user for details.
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# install base container packages and prep for VSCode
+RUN apt-get update \
+    # Verify process tools, lsb-release (common in install instructions for CLIs) installed
+    && apt-get -y install iproute2 procps lsb-release \
+    # Create a non-root user to use if preferred - see https://aka.ms/vscode-remote/containers/non-root-user.
+    && groupadd --gid $USER_GID $USERNAME \
+    && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    # [Optional] Add sudo support for the non-root user
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Install oh my zsh for vscode user
+ADD install-oh-my-zsh.sh /tmp
+RUN chmod +x /tmp/install-oh-my-zsh.sh  && \
+     sudo -u vscode sh -c /tmp/install-oh-my-zsh.sh && \
+     rm /tmp/install-oh-my-zsh.sh
+
+ENTRYPOINT [ "/bin/zsh" ]

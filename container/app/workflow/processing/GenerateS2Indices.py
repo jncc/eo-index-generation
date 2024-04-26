@@ -42,7 +42,7 @@ class GenerateS2Indices(luigi.Task):
 
         r_source(os.path.join(self.rFunctionRoot, 'renv/activate.R'))
 
-        functionPath = os.path.join(self.rFunctionRoot, "FunctionRunS2Indices.R")
+        functionPath = os.path.join(self.rFunctionRoot, "workflow/FunctionRunS2Indices.R")
 
         r_source(functionPath)
 

@@ -39,7 +39,7 @@ class GenerateS1Indices(luigi.Task):
 
         r_source(os.path.join(self.rFunctionRoot, 'renv/activate.R'))
 
-        functionPath = os.path.join(self.rFunctionRoot, "FunctionRunS1Indices.R")
+        functionPath = os.path.join(self.rFunctionRoot, "workflow/FunctionRunS1Indices.R")
         r_source(functionPath)
 
         runS1Indices = robjects.r['runS1Indices']
