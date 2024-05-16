@@ -5,7 +5,6 @@ suppressPackageStartupMessages(
   suppressWarnings({
     require(magrittr)
     require(raster)
-    require(rgdal)
   })
 )
 
