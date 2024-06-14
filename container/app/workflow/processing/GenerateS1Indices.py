@@ -17,7 +17,7 @@ log = logging.getLogger('luigi-interface')
 
 @requires(PrepareProcessing)
 class GenerateS1Indices(luigi.Task):
-    sentinelFrameId = luigi.Parameter()
+    productId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
     workingFolder = luigi.Parameter(default=defaults.Paths["output"])
     vvBand = luigi.IntParameter(default=defaults.S1IndexDefaults["vvBand"])
@@ -54,7 +54,7 @@ class GenerateS1Indices(luigi.Task):
             .drop_while(lambda x: not len(x.strip())) \
             .reduce(lambda x, y: f"{x}, {y}")
 
-        datestamp = re.findall("([0-9]{8})", self.sentinelFrameId)[0]
+        datestamp = re.findall("([0-9]{8})", self.productId)[0]
         outPath = os.path.join(self.workingFolder, "indices-tifs", "sentinel_1", datestamp[0:4], datestamp[4:6], datestamp[6:8])
 
         if not os.path.exists(outPath):
@@ -68,7 +68,7 @@ class GenerateS1Indices(luigi.Task):
             threshold - {self.threshold}""")
 
         rawData = runS1Indices(
-            self.sentinelFrameId,
+            self.productId,
             imagePath,
             outPath,
             self.vvBand,

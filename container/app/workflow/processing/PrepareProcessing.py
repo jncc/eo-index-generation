@@ -12,7 +12,7 @@ from functional import seq
 class PrepareProcessing(luigi.Task):
     # like "S2B_20200604_lat52lon234_T31UDT_ORB051_utm31n_osgb"
     # or   "S1B_20200703_52_desc_063001_063026_VVVH_G0_GB_OSGB_RTCK_SpkRL"
-    sentinelFrameId = luigi.Parameter()
+    productId = luigi.Parameter()
     workingFolder = luigi.Parameter(default=defaults.Paths["working"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     inputFolder = luigi.Parameter(default=defaults.Paths["input"])
@@ -26,17 +26,17 @@ class PrepareProcessing(luigi.Task):
         return target
 
     def run(self):
-        if self.sentinelFrameId.find(".") > -1:
-            raise Exception("Do not include the extension in the sentinelFrameId")
+        if self.productId.find(".") > -1:
+            raise Exception("Do not include the extension in the productId")
 
         # Copy files matching product id to working
         ardFiles = seq(os.listdir(self.inputFolder)) \
-            .filter(lambda x: x.startswith(self.sentinelFrameId)) \
+            .filter(lambda x: x.startswith(self.productId)) \
             .map(lambda x: self.copyFileToWorking(x, self.workingFolder)) \
             .to_list()
 
         if len(ardFiles) == 0:
-            raise Exception(f"No ard files matching {self.sentinelFrameId}")
+            raise Exception(f"No ard files matching {self.productId}")
 
         output = {
             "ardFiles": ardFiles

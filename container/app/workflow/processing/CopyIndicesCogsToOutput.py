@@ -19,15 +19,15 @@ Copies the indices COGs to the output folder
 
 
 class CopyIndicesCogsToOutput(luigi.Task):
-    sentinelFrameId = luigi.Parameter()
+    productId = luigi.Parameter()
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
 
     _stateFileName = ""
 
     def getOutputFilePath(self, cogFilePath, indexName):
-        satellite = self.sentinelFrameId[1:2]
-        datestamp = re.findall("([0-9]{8})", self.sentinelFrameId)[0]
+        satellite = self.productId[1:2]
+        datestamp = re.findall("([0-9]{8})", self.productId)[0]
         filename = os.path.basename(cogFilePath)
 
         outPath = os.path.join(self.outputFolder, f"sentinel_{satellite}", indexName.lower(), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
