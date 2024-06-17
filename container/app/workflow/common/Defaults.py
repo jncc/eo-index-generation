@@ -15,6 +15,8 @@ SpatialFrameworkFile = {
 
 RFunctionRoot = "/app/r-functions"
 
+ArdBasePath = "/neodc/sentinel_ard/data"
+
 
 class S1Indices(Enum):
     def __repr__(self):
