@@ -1,18 +1,28 @@
 import luigi
 import json
 import os
+import re
 from luigi.util import requires
 from ceda_ard_finder import CreateSymlinks
 
 
 @requires(CreateSymlinks)
 class GetArdProducts(luigi.Task):
-    stateLocation = luigi.Parameter()
+    stateFolder = luigi.Parameter()
+
+    @staticmethod
+    def parse_product(product):
+        parsedProduct = ""
+        if product.startswith("S1"):
+            parsedProduct = re.sub(r"\.tif$", "", product)
+        elif product.startswith("S2"):
+            parsedProduct = re.sub(r"_vmsk_sharp_rad_srefdem_stdsref\.tif$", "", product)
+        return parsedProduct
 
     def run(self):
         products = []
         with self.input().open("r") as createSymlinksFile:
-            products = json.load(createSymlinksFile)["products"]
+            products = [self.parse_product(os.path.basename(product)) for product in json.load(createSymlinksFile)["products"]]
 
         with self.output().open("w") as outFile:
             output = {
@@ -21,4 +31,4 @@ class GetArdProducts(luigi.Task):
             outFile.write(json.dumps(output, indent=4, sort_keys=True))
 
     def output(self):
-        return luigi.LocalTarget(os.path.join(self.stateLocation, "GetArdProducts.json"))
+        return luigi.LocalTarget(os.path.join(self.stateFolder, "GetArdProducts.json"))
