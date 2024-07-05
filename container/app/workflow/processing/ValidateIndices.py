@@ -27,6 +27,7 @@ class ValidateIndices(luigi.Task):
 
     _stateFileName = ""
     _satellite = ""
+    _index_range = []
 
     @staticmethod
     def get_size(path):
@@ -42,7 +43,7 @@ class ValidateIndices(luigi.Task):
             return f"{round(size/(1024 ** 3), 2)} GB"
 
     @staticmethod
-    def get_stats(index_filepath, file_size, index, index_filename, ardFile):
+    def get_stats(index_filepath, file_size, index, index_filename, ardFile, index_range):
 
         # determine if the file is a valid cog
         valid_cog, _, _ = rio_cogeo.cog_validate(index_filepath)
@@ -66,7 +67,7 @@ class ValidateIndices(luigi.Task):
             meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", index_filename).group(1), "%Y%m%d")
             meta["tile"] = re.sub(fr"_{index}.tif$", "", index_filename, flags=re.IGNORECASE)
 
-            meta["within_range"] = "Y" if meta["min"] > -1 and meta["max"] < 1 else "N"
+            meta["within_range"] = "Y" if meta["min"] > index_range[0] and meta["max"] < index_range[1] else "N"
 
             meta["valid_cog"] = valid_cog
 
@@ -114,12 +115,11 @@ class ValidateIndices(luigi.Task):
             cogFiles = (json.load(CopyIndicesCogsToOutput))["indicesCogFiles"]
 
         qc_data = []
+        datestamp = re.findall("([0-9]{8})", self.productId)[0]
 
         if self._satellite == "S1":
-            pass
-            # TODO: Implement this
+            ardFile = f"{self.ardPath}/{datestamp[0:4]}/{datestamp[4:6]}/{datestamp[6:8]}/{self.productId}.tif"
         elif self._satellite == "S2":
-            datestamp = re.findall("([0-9]{8})", self.productId)[0]
             ardFile = f"{self.ardPath}/{datestamp[0:4]}/{datestamp[4:6]}/{datestamp[6:8]}/{self.productId}_sat.tif"
 
         for i in cogFiles:
@@ -132,7 +132,8 @@ class ValidateIndices(luigi.Task):
                 self.get_size(index_filepath),
                 index,
                 index_filename,
-                ardFile
+                ardFile,
+                self._index_range
             ))
 
         pool = mp.Pool(len(qc_data))
@@ -156,9 +157,9 @@ class ValidateIndices(luigi.Task):
 class ValidateIndicesForS1(ValidateIndices):
     _stateFileName = "ValidateIndicesForS1.json"
     _satellite = "S1"
-    ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
+    _index_range = [-504, 504]
 
-    # TODO: Implement this
+    ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
     def nullFunction(self):
         pass
@@ -168,6 +169,8 @@ class ValidateIndicesForS1(ValidateIndices):
 class ValidateIndicesForS2(ValidateIndices):
     _stateFileName = "ValidateIndicesForS2.json"
     _satellite = "S2"
+    _index_range = [-1, 1]
+
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
     def nullFunction(self):
