@@ -76,7 +76,6 @@ COPY config/app/workflow/workflow-luigi.cfg /etc/luigi/luigi.cfg
 COPY app/exec.sh ./
 RUN chmod +rx /app/exec.sh \
     && mkdir -p /input/ \
-    && mkdir -p /static/ \
     && mkdir -p /state/ \ 
     && mkdir -p /working/ \
     && mkdir -p /output/ 
