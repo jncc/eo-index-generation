@@ -77,6 +77,7 @@ class SubmitJobs(luigi.Task):
     indicesList = luigi.Parameter(default="")
     templatesDir = luigi.Parameter()
     testProcessing = luigi.BoolParameter(default=False)
+    s2CloudsBasePath = ""
 
     templateFilename = ""
     platform = ""
@@ -105,6 +106,9 @@ class SubmitJobs(luigi.Task):
                 "productId": product["productName"],
                 "indices": ""
             }
+
+            if self.platform == "S2":
+                commandArgs["cloudMaskBasePath"] = f"--bind {self.s2CloudsBasePath}"
 
             if self.indicesList != "":
                 commandArgs["indicesList"] = f"--indices {self.indicesList}"
@@ -156,6 +160,8 @@ class SubmitJobsForS1(SubmitJobs):
 
 @requires(SetupWorkDirs)
 class SubmitJobsForS2(SubmitJobs):
+    s2CloudsBasePath = luigi.Parameter()
+
     templateFilename = "s2_index_generation_job_template.sbatch"
     platform = "S2"
     sbatchFileName = "s2_index_generation_job.sbatch"
