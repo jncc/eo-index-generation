@@ -2,16 +2,11 @@ from enum import Enum
 
 Paths = {
     "input": "/input",
-    "static": "/static",
     "state": "/state",
     "working": "/working",
     "output": "/output"
 }
 
-SpatialFrameworkFile = {
-    "polygonIdField": "ID",
-    "habitatIdField": "main_habit"
-}
 
 RFunctionRoot = "/app/r-functions"
 
@@ -71,14 +66,6 @@ S2IndexDefaults = {
     "swirBand2": 10
 }
 
-aws = {
-    "s3ConfigFile": "s3config.json"
-}
-
 CogProcess = {
     "maxCogProcesss": 3
-}
-
-PolygonStatsDefaults = {
-    "noDataValue": -9999
 }
