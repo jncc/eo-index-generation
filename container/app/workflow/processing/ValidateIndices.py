@@ -7,6 +7,7 @@ import re
 import math
 from datetime import date, datetime
 import rasterio
+from rasterio import CRS
 import rio_cogeo
 import multiprocessing as mp
 import pandas as pd
@@ -52,6 +53,8 @@ class ValidateIndices(luigi.Task):
             meta = dataset.profile  # width, hight, crs etc
             indexBounds = dataset.bounds  # get boundary extent
             idt = dataset.transform  # get transformation params
+            pixel = dataset.res  # get pixel size
+            units = dataset.crs.linear_units  # get units of crs
             image = dataset.read()
 
             # Set all nodata values to 0
@@ -63,6 +66,8 @@ class ValidateIndices(luigi.Task):
             meta["filesize"] = file_size
             meta["index"] = index
             meta["overview"] = bool(dataset.overviews(1))
+            meta["is_resolution_10"] = "Y" if pixel == (10.0, 10.0) else "N"
+            meta["is_units_m"] = "Y" if units == "metre" else "N"
             meta["QC_date"] = date.today()
             meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", index_filename).group(1), "%Y%m%d")
             meta["tile"] = re.sub(fr"_{index}.tif$", "", index_filename, flags=re.IGNORECASE)
@@ -94,18 +99,40 @@ class ValidateIndices(luigi.Task):
             return meta
 
     @staticmethod
-    def process(results, output_path):
+    def process(results):
         df = pd.DataFrame.from_dict(results)
         df["Check"] = df.index.isin(df.sample(frac=0.05, random_state=1).index)  # 5% check
-        df.to_csv(output_path, index=False)
 
-        len(df["crs"].unique()) == 1 or log.error("issue with CRS consistency, check QC file")
-        len(df["dtype"].unique()) == 1 or log.error("issue with data type consistency, check QC file")
-        len(df["within_range"].unique()) == 1 or log.error("issue with index range consistency, check QC file")
-        len(df["valid_cog"].unique()) == 1 or log.error("issue with one or more COGS, check QC file")
-        len(df["nodata"].unique()) == 1 or log.error("Inconsistent no data values, check QC file")
-        len(df["extent_match"].unique()) == 1 or log.error("Inconsistent extent, check QC file")
-        len(df["aligned"].unique()) == 1 or log.error("Inconsistent pixel alignement, check QC file")
+        err = []
+
+        len(df["crs"].unique()) == 1 or err.append("issue with CRS consistency")
+        len(df["dtype"].unique()) == 1 or err.append("issue with data type consistency")
+        len(df["within_range"].unique()) == 1 or err.append("issue with index range consistency")
+        len(df["valid_cog"].unique()) == 1 or err.append("issue with one or more COGS")
+        len(df["nodata"].unique()) == 1 or err.append("Inconsistent no data values")
+        len(df["extent_match"].unique()) == 1 or err.append("Inconsistent extent")
+        len(df["aligned"].unique()) == 1 or err.append("Inconsistent pixel alignement")
+        len(df["is_resolution_10"].unique()) == 1 or err.append("Inconsistent resolution")
+        len(df["is_units_m"].unique()) == 1 or err.append("Inconsistent units")
+
+        if err:
+            log.error(f"Issues with QC: {err}")
+
+        res = {}
+        dfc = df.copy()
+        dfc['ARD_date'] = dfc['ARD_date'].astype(str)
+        dfc['QC_date'] = dfc['QC_date'].astype(str)
+
+        dfc.set_index(["tile", "index"], inplace=True)
+        dfc = dfc.T
+
+        for (product, index) in dfc.columns:
+            if product not in res:
+                res[product] = {index: dfc[product, index].to_dict()}
+            else:
+                res[product].update({index: dfc[product, index].to_dict()})
+
+        return res, err
 
     def _multi_run_wrapper(self, args):
         return self.get_stats(*args)
@@ -138,11 +165,12 @@ class ValidateIndices(luigi.Task):
 
         pool = mp.Pool(len(qc_data))
         results = pool.map(self._multi_run_wrapper, qc_data)
-        self.process(results, f"{self.outputFolder}/qc/{self.productId}_QC.csv")
+        processed_results = self.process(results)
 
         output = {
             "prodcutId": self.productId,
-            "qcFile": f"{self.outputFolder}/qc/{self.productId}_QC.csv"
+            "qcErrors": processed_results[1] if processed_results[1] else False,
+            "qcResults": processed_results[0]
         }
 
         with self.output().open('w') as o:
