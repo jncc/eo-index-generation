@@ -7,7 +7,6 @@ import re
 import math
 from datetime import date, datetime
 import rasterio
-from rasterio import CRS
 import rio_cogeo
 import multiprocessing as mp
 import pandas as pd
