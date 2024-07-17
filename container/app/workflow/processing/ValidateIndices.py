@@ -65,13 +65,13 @@ class ValidateIndices(luigi.Task):
             meta["filesize"] = file_size
             meta["index"] = index
             meta["overview"] = bool(dataset.overviews(1))
-            meta["is_resolution_10"] = "Y" if pixel == (10.0, 10.0) else "N"
-            meta["is_units_m"] = "Y" if units == "metre" else "N"
+            meta["is_resolution_10"] = bool(pixel == (10.0, 10.0))
+            meta["is_units_m"] = bool(units == "metre")
             meta["QC_date"] = date.today()
-            meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", index_filename).group(1), "%Y%m%d")
+            meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", index_filename).group(1), "%Y%m%d").date()
             meta["tile"] = re.sub(fr"_{index}.tif$", "", index_filename, flags=re.IGNORECASE)
 
-            meta["within_range"] = "Y" if meta["min"] > index_range[0] and meta["max"] < index_range[1] else "N"
+            meta["within_range"] = bool(meta["min"] > index_range[0] and meta["max"] < index_range[1])
 
             meta["valid_cog"] = valid_cog
 
@@ -84,11 +84,11 @@ class ValidateIndices(luigi.Task):
                     math.isclose(ardBounds[2], indexBounds[2]) and
                         math.isclose(ardBounds[3], indexBounds[3])):
 
-                    meta["extent_match"] = "Y"
-                    meta["aligned"] = "Y" if math.isclose(idt[0], adt[0]) and math.isclose(idt[4], adt[4]) else "N"
+                    meta["extent_match"] = True
+                    meta["aligned"] = bool(math.isclose(idt[0], adt[0]) and math.isclose(idt[4], adt[4]))
 
                 else:
-                    meta["extent_match"] = "N"
+                    meta["extent_match"] = False
                     meta["indexbounds"] = indexBounds
                     meta["ardbounds"] = ardBounds
 
@@ -119,8 +119,12 @@ class ValidateIndices(luigi.Task):
 
         res = {}
         dfc = df.copy()
-        dfc['ARD_date'] = dfc['ARD_date'].astype(str)
-        dfc['QC_date'] = dfc['QC_date'].astype(str)
+
+        object_cols = dfc.select_dtypes(include=['object']).columns  # Convert objects to string so (hopefully) no error with json dump
+        excluded_cols = ["ard_transform", "transform"]  # ... Exclude known good columns
+
+        object_cols = [col for col in object_cols if col not in excluded_cols]
+        dfc[object_cols] = dfc[object_cols].astype(str)
 
         dfc.set_index(["tile", "index"], inplace=True)
         dfc = dfc.T
