@@ -8,3 +8,7 @@
 #SBATCH -e $jobWorkingDir/%J.err
 
 /usr/bin/singularity exec --bind /neodc/sentinel_ard/data,/datacentre --bind $inputMount:/input --bind $outputMount:/output --bind $stateMount:/state --bind $workingMount:/working --bind $tmpMount:/tmp $containerPath /app/exec.sh --module workflow.processing ValidateIndicesForS1 --productId $productId $indices --local-scheduler
+
+if [ -f $stateMount/ValidateIndicesForS1.json ]; then
+    rm -r $workingMount/*
+fi
