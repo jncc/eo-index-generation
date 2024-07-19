@@ -3,6 +3,18 @@ from qc.utils import get_logger
 
 logger = get_logger("indices_qc")
 
+__all__ = [
+    "check_crs",
+    "check_dtype",
+    "check_within_range",
+    "check_valid_cog",
+    "check_nodata",
+    "check_extent_match",
+    "check_aligned",
+    "check_resolution",
+    "check_units",
+]
+
 
 def check_crs(df: pd.DataFrame) -> bool:
     if (len(df["crs"].unique()) == 1):
@@ -64,4 +76,22 @@ def check_aligned(df: pd.DataFrame) -> bool:
         return True
     else:
         logger.error(f"Inconsistent pixel alignement, check QC file")
+        return False
+
+
+def check_resolution(df: pd.DataFrame) -> bool:
+    if (len(df["is_resolution_10"].unique()) == 1):
+        logger.info(f"All files have the same resolution")
+        return True
+    else:
+        logger.error(f"Inconsistent resolution, check QC file")
+        return False
+
+
+def check_units(df: pd.DataFrame) -> bool:
+    if (len(df["is_units_m"].unique()) == 1):
+        logger.info(f"All files have the same units")
+        return True
+    else:
+        logger.error(f"Inconsistent units, check QC file")
         return False

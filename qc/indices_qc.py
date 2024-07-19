@@ -9,7 +9,7 @@ import math
 import re
 
 from qc.utils import get_size, get_logger
-from qc.df_checks import check_crs, check_dtype, check_within_range, check_valid_cog, check_nodata, check_extent_match, check_aligned
+from qc.df_checks import *
 
 logger = get_logger("indices_qc")
 
@@ -77,6 +77,8 @@ def get_stats(filename_path, file_size, index, file, ardfilename):
         meta = dataset.profile  # width, hight, crs etc
         indexBounds = dataset.bounds  # get boundary extent
         idt = dataset.transform  # get transformation params
+        pixel = dataset.res  # get pixel size
+        units = dataset.crs.linear_units  # get units of crs
         image = dataset.read()
 
         # Set all nodata values to 0
@@ -88,11 +90,13 @@ def get_stats(filename_path, file_size, index, file, ardfilename):
         meta["filesize"] = file_size
         meta["index"] = index
         meta["overview"] = bool(dataset.overviews(1))
+        meta["is_resolution_10"] = bool(pixel == (10.0, 10.0))
+        meta["is_units_m"] = bool(units == "metre")
         meta["QC_date"] = date.today()
-        meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", file).group(1), "%Y%m%d")
+        meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", file).group(1), "%Y%m%d").date()
         meta["tile"] = re.sub(fr"_{index}.tif$", "", file, flags=re.IGNORECASE)
 
-        meta["within_range"] = "Y" if meta["min"] > -1 and meta["max"] < 1 else "N"
+        meta["within_range"] = bool(meta["min"] > -1 and meta["max"] < 1)
 
         meta["valid_cog"] = valid_cog
 
@@ -105,11 +109,11 @@ def get_stats(filename_path, file_size, index, file, ardfilename):
                 math.isclose(ardBounds[2], indexBounds[2]) and
                     math.isclose(ardBounds[3], indexBounds[3])):
 
-                meta["extent_match"] = "Y"
-                meta["aligned"] = "Y" if math.isclose(idt[0], adt[0]) and math.isclose(idt[4], adt[4]) else "N"
+                meta["extent_match"] = True
+                meta["aligned"] = bool(math.isclose(idt[0], adt[0]) and math.isclose(idt[4], adt[4]))
 
             else:
-                meta["extent_match"] = "N"
+                meta["extent_match"] = False
                 meta["indexbounds"] = indexBounds
                 meta["ardbounds"] = ardBounds
 
@@ -139,6 +143,8 @@ def process(results, output_path):
     check_nodata(df)
     check_extent_match(df)
     check_aligned(df)
+    check_resolution(df)
+    check_units(df)
 
     logger.info("Checking QC report complete")
 
