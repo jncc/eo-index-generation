@@ -10,7 +10,7 @@
 
 /usr/bin/singularity exec --bind /neodc/sentinel_ard/data,/datacentre --bind $inputMount:/input --bind $outputMount:/output --bind $stateMount:/state --bind $workingMount:/working --bind $tmpMount:/tmp $containerPath /app/exec.sh --module workflow.processing PrepareProcessing --productId $productId --local-scheduler
 
-memPerCpu=$((72 / $indexCount))
+memPerCpu=$$((72 / $indexCount))
 indices=$indices
 
 for index in "$${indices[@]}"
