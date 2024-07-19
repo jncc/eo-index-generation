@@ -74,7 +74,7 @@ class SubmitJobs(luigi.Task):
     basketFolder = luigi.Parameter()
     outputFolder = luigi.Parameter()
     containerPath = luigi.Parameter()
-    indices = luigi.Parameter(default="")
+    indices = luigi.Parameter()
     templatesDir = luigi.Parameter()
     testProcessing = luigi.BoolParameter(default=False)
     s2CloudsBasePath = ""
@@ -93,6 +93,7 @@ class SubmitJobs(luigi.Task):
             sbatchTemplate = Template(t.read())
 
         tasks = []
+        indices = self.indices.split(",")
 
         for product in products:
             commandArgs = {
@@ -104,14 +105,12 @@ class SubmitJobs(luigi.Task):
                 "tmpMount": product["tmpDir"],
                 "containerPath": self.containerPath,
                 "productId": product["productName"],
-                "indices": ""
+                "indexCount": len(indices),
+                "indices": f"""({" ".join(['"'+ i + '"' for i in indices])})"""
             }
 
             if self.platform == "S2":
                 commandArgs["cloudMaskBasePath"] = f"--bind {self.s2CloudsBasePath}"
-
-            if self.indices != "":
-                commandArgs["indices"] = f"--indices {self.indices}"
 
             sbatchScript = sbatchTemplate.substitute(commandArgs)
             sbatchScriptPath = os.path.join(product["parentWorkDir"], self.sbatchFileName)
