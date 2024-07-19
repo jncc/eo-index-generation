@@ -69,8 +69,7 @@ class GenerateIndicesCogs(luigi.Task):
 
         cogDir = os.path.join(self.workingFolder, "indices-cogs")
 
-        if not os.path.exists(cogDir):
-            os.makedirs(cogDir)
+        os.makedirs(cogDir, exist_ok=True)
 
         jobList = seq(indicesFiles) \
             .map(lambda x: {

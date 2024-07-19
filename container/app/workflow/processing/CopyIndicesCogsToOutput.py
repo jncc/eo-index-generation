@@ -46,8 +46,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
             destination = self.getOutputFilePath(source, indexName)
             destinationDir = os.path.dirname(destination)
 
-            if not os.path.exists(destinationDir):
-                os.makedirs(destinationDir)
+            os.makedirs(destinationDir, exist_ok=True)
 
             if not os.path.exists(destination):
                 shutil.copyfile(source, destination)

@@ -57,8 +57,7 @@ class GenerateS1Indices(luigi.Task):
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         outPath = os.path.join(self.workingFolder, "indices-tifs", "sentinel_1", datestamp[0:4], datestamp[4:6], datestamp[6:8])
 
-        if not os.path.exists(outPath):
-            os.makedirs(outPath)
+        os.makedirs(outPath, exist_ok=True)
 
         log.info(f"""Generating S1 indices with imagepath - {imagePath}, 
             fileout_path - {outPath}, 
