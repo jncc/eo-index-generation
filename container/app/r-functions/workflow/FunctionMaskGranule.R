@@ -14,29 +14,33 @@ maskGranule <- function(imgfile, cloudfile, topofile, workingFolder){
   satellite <- raster::stack(imgfile)
   cloud <- raster::raster(cloudfile)
   shadow <- raster::raster(topofile)
-
+  
+  # crop to ard extent
+  satellite_extent <- raster::extent(satellite)
+  cropped_cloud <- raster::crop(cloud, satellite_extent)
+  
   # cloud mask
-  satellite_msk <- raster::overlay(satellite, cloud, fun = function(x, y){
+  satellite_msk <- raster::overlay(satellite, cropped_cloud, fun = function(x, y){
     x[!is.na(y[])] <- NA
     return(x)
   })
-
-   # shadow mask
+  
+  # shadow mask
   satellite_msk <- raster::overlay(satellite_msk, shadow, fun = function(x, y){
     x[!is.na(y[])] <- NA
     return(x)
   })
   
-  # ensure projection to EPSG 27700
-  crs(satellite_msk)<-CRS(SRS_string = "EPSG:27700")
+  # ensure same projection as input file
+  crs(satellite_msk)<-raster::crs(satellite)
   
   # get name
   outName <- basename(imgfile) %>% 
     tools::file_path_sans_ext() %>%
     stringr::str_extract(pattern = "^.+(?=_utm)")
-
+  
   outfile <- file.path(workingFolder, paste0(outName, "_msk.tif"))
-
+  
   # write raster
   raster::writeRaster(satellite_msk,
                       outfile,

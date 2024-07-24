@@ -35,9 +35,9 @@ runS1Indices<-function(filebasename, imagepath, fileout_path, vv=1, vh=2, index,
   } else {
     index <- index
   }
-
+  
   ## Create indices functions
-
+  
   ## Compute RVI using linear values.
   RVI_fun <- function(x){
     #Convert from db to linear
@@ -46,19 +46,19 @@ runS1Indices<-function(filebasename, imagepath, fileout_path, vv=1, vh=2, index,
     rvi <- (4*VH_linear)/(VV_linear + VH_linear)
     return(rvi)
   }
-
+  
   # Compute VV/VH using dB values
   VVVH_fun <- function(x){
     vvvh <- (x[[vv]]/x[[vh]])
     return(vvvh)
   }
-
+  
   # Compute VH/VV using dB values
   VHVV_fun <- function(x){
     vhvv <- (x[[vh]]/x[[vv]])
     return(vhvv)
   }
- 
+  
   # Compute RFDI using linear values
   RFDI_fun <- function(x){
     #Convert from db to linear
@@ -67,50 +67,52 @@ runS1Indices<-function(filebasename, imagepath, fileout_path, vv=1, vh=2, index,
     rfdi <- (VV_linear-VH_linear)/(VV_linear+VH_linear)
     return(rfdi)
   }
-
+  
   ## Create lookup table
   all_ind <- tibble::tribble(~name,~formula,
                              "RVI", RVI_fun,
                              "VVVH", VVVH_fun,
                              "VHVV", VHVV_fun,
                              "RFDI", RFDI_fun)
-
+  
   ## Filter to specified indices
   indi_tib <- all_ind %>% dplyr::filter(name %in% index)
-
+  
   index_list <- as.list(indi_tib$name)
   
   ## Iterate through indices calculations with single input S1 scene
   indices_rasters <- purrr::map(index_list, function(ind){
-
+    
     # Get file and indices function
     granule <- raster::brick(as.character(imagepath))
     indi_row <- indi_tib %>% dplyr::filter(name == ind)
     # Run indices function over raster
     ind_out <- raster::calc(granule, fun=indi_row$formula[[1]])
     
+    # Enforce ARD extent and 10m pixel size
+    ind_out <- raster::projectRaster(ind_out, crs = raster::crs(granule), extent = raster::extent(granule), res = 10)
+    
     # Mask outlier values specified by threshold to NA 
     ind_out[ind_out >= threshold] <- NA
     ind_out[ind_out <= (-threshold)] <- NA
     
-    #set projection to EPSG 27700 and NoData value to -9999
-    crs(ind_out)<-CRS(SRS_string = "EPSG:27700")
+    # set NoData value to -9999
     NAvalue(ind_out) = -9999
     
     # Write out indices layer
     indices_raster <- file.path(fileout_path, paste0(filebasename, "_", as.character(indi_row$name), ".tif"))
-
+    
     raster::writeRaster(ind_out,
                         indices_raster,
                         overwrite=T, NAflag = -9999, options = "COMPRESS=LZW")
-
+    
     output <- list(indexName = indi_row$name,
-        indexFile = indices_raster)
-
+                   indexFile = indices_raster)
+    
     return(output)
   })
-
+  
   jsonOut <- rjson::toJSON(indices_rasters)
-
+  
   return(jsonOut)
 }
