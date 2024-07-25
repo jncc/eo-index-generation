@@ -1,5 +1,6 @@
 #!/bin/bash
-#SBATCH -p short-serial
+#SBATCH -p par-single
+#SBATCH --cpus-per-task=$indexCount
 #SBATCH --time=04:00:00
 #SBATCH --mem=64G
 #SBATCH -D $jobWorkingDir
