@@ -65,14 +65,18 @@ class CopyIndicesCogsToOutput(luigi.Task):
         with self.output().open('w') as o:
             json.dump(output, o, indent=4)
 
-    def output(self):
-        outFile = os.path.join(self.stateFolder, self._stateFileName)
-        return LocalTarget(outFile)
+    # def output(self):
+    #     outFile = os.path.join(self.stateFolder, self._stateFileName)
+    #     return LocalTarget(outFile)
 
 
 @requires(GenerateIndicesCogsForS1)
 class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
-    _stateFileName = "CopyIndicesCogsToOutputForS1.json"
+    parallel = luigi.Parameter(default=None)
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, f"CopyIndicesCogsToOutputForS1{'_' + self.parallel if self.parallel else ''}.json")
+        return LocalTarget(outFile)
 
     def nullFunction(self):
         pass

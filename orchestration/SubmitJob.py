@@ -106,7 +106,7 @@ class SubmitJobs(luigi.Task):
                 "containerPath": self.containerPath,
                 "productId": product["productName"],
                 "indexCount": len(indices),
-                "indices": f"""({" ".join(['"'+ i + '"' for i in indices])})"""
+                "indices": f"--indices {self.indices}",
             }
 
             if self.platform == "S2":
