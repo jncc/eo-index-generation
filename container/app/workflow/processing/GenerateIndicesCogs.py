@@ -120,7 +120,11 @@ class GenerateIndicesCogsForS1(GenerateIndicesCogs):
 
 @requires(GenerateS2Indices)
 class GenerateIndicesCogsForS2(GenerateIndicesCogs):
-    _stateFileName = "GenerateIndicesCogsForS2.json"
+    parallel = luigi.Parameter(default=None)
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, f"GenerateIndicesCogsForS2{'_' + self.parallel if self.parallel else ''}.json")
+        return LocalTarget(outFile)
 
     def nullFunction(self):
         pass

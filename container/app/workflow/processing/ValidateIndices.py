@@ -200,8 +200,13 @@ class ValidateIndicesForS1(ValidateIndices):
 
 @requires(CopyIndicesCogsToOutputForS2)
 class ValidateIndicesForS2(ValidateIndices):
-    _stateFileName = "ValidateIndicesForS2.json"
+    parallel = luigi.Parameter(default=None)
+
     _satellite = "S2"
     _index_range = [-1, 1]
 
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, f"ValidateIndicesForS2{'_' + self.parallel if self.parallel else ''}.json")
+        return LocalTarget(outFile)

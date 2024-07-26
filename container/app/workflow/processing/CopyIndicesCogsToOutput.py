@@ -84,7 +84,11 @@ class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
 
 @requires(GenerateIndicesCogsForS2)
 class CopyIndicesCogsToOutputForS2(CopyIndicesCogsToOutput):
-    _stateFileName = "CopyIndicesCogsToOutputForS2.json"
+    parallel = luigi.Parameter(default=None)
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, f"CopyIndicesCogsToOutputForS2{'_' + self.parallel if self.parallel else ''}.json")
+        return LocalTarget(outFile)
 
     def nullFunction(self):
         pass

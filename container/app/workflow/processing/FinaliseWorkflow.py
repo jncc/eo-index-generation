@@ -18,3 +18,15 @@ class FinaliseS1Workflow(luigi.WrapperTask):
     def requires(self):
         for index in self.indices:
             yield ValidateIndicesForS1(productId=self.productId, indices=[index], parallel=index.value)
+
+
+class FinaliseS2Workflow(luigi.WrapperTask):
+    productId = luigi.Parameter()
+    indices = EnumListParameter(
+        enum=defaults.S2Indices,
+        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL",
+        default=defaults.S2IndexDefaults["defaultIndices"])
+
+    def requires(self):
+        for index in self.indices:
+            yield ValidateIndicesForS2(productId=self.productId, indices=[index], parallel=index.value)
