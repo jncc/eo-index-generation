@@ -37,9 +37,9 @@ class FinaliseWorkflow(luigi.Task):
                 data = json.load(ValidateIndices)
 
                 if "qcConsistencyErrors" in output:
-                    output["qcConsistencyErrors"] = data["qcErrors"] or output["qcConsistencyErrors"]
+                    output["qcConsistencyErrors"] = bool(data["qcErrors"]) or output["qcConsistencyErrors"]
                 else:
-                    output["qcConsistencyErrors"] = data["qcErrors"]
+                    output["qcConsistencyErrors"] = bool(data["qcErrors"])
 
         with self.output().open('w') as o:
             json.dump(output, o, indent=4)
