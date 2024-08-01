@@ -9,19 +9,20 @@ import numpy
 from functional import seq
 from luigi.util import requires
 from luigi import LocalTarget
+from workflow.processing.PrepareProcessing import PrepareProcessing
 from workflow.processing.GenerateS1Indices import GenerateS1Indices
 from workflow.processing.GenerateS2Indices import GenerateS2Indices
 
 log = logging.getLogger('luigi-interface')
 
-class EnforceArdRasterProperties(luigi.Task):
+class ApplyIndicesCorrections(luigi.Task):
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     workingFolder = luigi.Parameter(default=defaults.Paths["working"])
 
     _stateFileName = ""
 
-    def getArdRasterProperties(dataFile):
+    def getArdRasterProperties(self, dataFile):
         with rasterio.open(dataFile) as data:
             crs = data.crs
             shape = data.shape
@@ -29,7 +30,7 @@ class EnforceArdRasterProperties(luigi.Task):
 
         return crs, shape, transform
     
-    def getIndexRasterProperties(dataFile):
+    def getIndexRasterProperties(self, dataFile):
         with rasterio.open(dataFile) as data:
             crs = data.crs
             transform = data.transform
@@ -39,27 +40,30 @@ class EnforceArdRasterProperties(luigi.Task):
         return crs, transform, dtypes, data
 
     def run(self):
-        with self.input().open('r') as pp:
+        with self.input()[0].open('r') as pp:
             ardFiles = (json.load(pp))["ardFiles"]
 
-        with self.input().open('r') as ix:
+        with self.input()[1].open('r') as ix:
             indicesFiles = (json.load(ix))["indicesFiles"]
 
         correctedDir = os.path.join(self.workingFolder, "indices-corrected")
 
+        if not os.path.exists(correctedDir):
+            os.makedirs(correctedDir)
+
         ardDataFile = seq(ardFiles) \
-            .filter(lambda x: x.lower().endswith("_RTCK_SpkRL.tif") 
+            .filter(lambda x: x.lower().endswith("_rtck_spkrl.tif") 
                     or x.lower().endswith("vmsk_sharp_rad_srefdem_stdsref.tif")) \
             .first()
 
         ard_crs, ard_shape, ard_transform = self.getArdRasterProperties(ardDataFile)
 
         output = {
-            "correctedIndicesFiles": []
+            "indicesFiles": []
         }
 
         for index in indicesFiles:
-            indexFile = index["indexfile"]
+            indexFile = index["indexFile"]
             index_crs, index_transform, index_dtypes, index_data = self.getIndexRasterProperties(indexFile)
             dst_data = numpy.empty(ard_shape, dtype=index_dtypes[0])
             correctIndexFilePath = os.path.join(correctedDir, os.path.basename(indexFile))
@@ -85,7 +89,10 @@ class EnforceArdRasterProperties(luigi.Task):
                 crs=ard_crs) as dst:
                 dst.write(dst_data, indexes=1)
 
-            output["correctedIndicesFiles"].append(correctIndexFilePath)
+            output["indicesFiles"].append({
+                "indexName": index["indexName"],
+                "indexFile": correctIndexFilePath
+            })
 
         with self.output().open('w') as o:
             json.dump(output, o, indent=4)
@@ -94,16 +101,16 @@ class EnforceArdRasterProperties(luigi.Task):
         outFile = os.path.join(self.stateFolder, self._stateFileName)
         return LocalTarget(outFile)
 
-@requires(GenerateS1Indices)
-class EnforceS1ArdRasterProperties(EnforceArdRasterProperties):
-    _stateFileName = "EnforceS1ArdRasterProperties.json"
+@requires(PrepareProcessing, GenerateS1Indices)
+class ApplyS1IndicesCorrections(ApplyIndicesCorrections):
+    _stateFileName = "ApplyS1IndicesCorrections.json"
 
     def nullFunction(self):
         pass
 
-@requires(GenerateS2Indices)
-class EnforceS2ArdRasterProperties(EnforceArdRasterProperties):
-    _stateFileName = "EnforceS2ArdRasterProperties.json"
+@requires(PrepareProcessing, GenerateS2Indices)
+class ApplyS2IndicesCorrections(ApplyIndicesCorrections):
+    _stateFileName = "ApplyS2IndicesCorrections.json"
 
     def nullFunction(self):
         pass

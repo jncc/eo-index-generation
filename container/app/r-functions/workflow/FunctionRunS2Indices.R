@@ -91,10 +91,8 @@ runS2Indices<-function(filebasename, imagepath, fileout_path, index, r, g, b, ni
     #run indices function over rasterbrick
     ind_out <- raster::calc(granule, fun=indi_row$formula[[1]])
     
-    # Enforce ARD extent and 10m pixel size
-    ind_out <- raster::projectRaster(ind_out, crs = raster::crs(granule), extent = raster::extent(granule), res = 10)
-    
-    # set NoData value to -9999
+    #set projection to EPSG 27700 and NoData value to -9999
+    crs(ind_out)<-CRS(SRS_string = "EPSG:27700")
     NAvalue(ind_out) = -9999
     
     #write out indices layer
