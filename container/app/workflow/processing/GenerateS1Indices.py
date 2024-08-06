@@ -46,7 +46,7 @@ class GenerateS1Index(luigi.Task):
             .filter(lambda x: x.lower().endswith(".tif")) \
             .first()
 
-        indices = seq(self.indices) \
+        indices = seq(self.index) \
             .map(lambda x: x.value) \
             .distinct() \
             .drop_while(lambda x: not len(x.strip())) \
