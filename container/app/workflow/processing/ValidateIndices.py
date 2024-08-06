@@ -179,34 +179,28 @@ class ValidateIndices(luigi.Task):
         with self.output().open('w') as o:
             json.dump(output, o, indent=4)
 
-    # def output(self):
-    #     outFile = os.path.join(self.stateFolder, self._stateFileName)
-    #     return LocalTarget(outFile)
+    def output(self):
+        outFile = os.path.join(self.stateFolder, self._stateFileName)
+        return LocalTarget(outFile)
 
 
 @requires(CopyIndicesCogsToOutputForS1)
 class ValidateIndicesForS1(ValidateIndices):
-    parallel = luigi.Parameter(default=None)
 
     _satellite = "S1"
     _index_range = [-504, 504]
 
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
-    def output(self):
-        outFile = os.path.join(self.stateFolder, f"ValidateIndicesForS1{'_' + self.parallel if self.parallel else ''}.json")
-        return LocalTarget(outFile)
+    _stateFileName = "ValidateIndicesForS1.json"
 
 
 @requires(CopyIndicesCogsToOutputForS2)
 class ValidateIndicesForS2(ValidateIndices):
-    parallel = luigi.Parameter(default=None)
 
     _satellite = "S2"
     _index_range = [-1, 1]
 
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
-    def output(self):
-        outFile = os.path.join(self.stateFolder, f"ValidateIndicesForS2{'_' + self.parallel if self.parallel else ''}.json")
-        return LocalTarget(outFile)
+    _stateFileName = "ValidateIndicesForS2.json"

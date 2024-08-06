@@ -7,8 +7,8 @@
 #SBATCH -o $jobWorkingDir/%J.out
 #SBATCH -e $jobWorkingDir/%J.err
 
-/usr/bin/singularity exec --bind /neodc/sentinel_ard/data,/datacentre $cloudMaskBasePath --bind $inputMount:/input --bind $outputMount:/output --bind $stateMount:/state --bind $workingMount:/working --bind $tmpMount:/tmp $containerPath /app/exec.sh --module workflow.processing FinaliseS2Workflow --productId $productId $indices --workers $indexCount --local-scheduler
+/usr/bin/singularity exec --bind /neodc/sentinel_ard/data,/datacentre $cloudMaskBasePath --bind $inputMount:/input --bind $outputMount:/output --bind $stateMount:/state --bind $workingMount:/working --bind $tmpMount:/tmp $containerPath /app/exec.sh --module workflow.processing ValidateIndicesForS2 --productId $productId $indices --workers $indexCount --local-scheduler
 
-if [ -f $stateMount/FinaliseS2Workflow.json ]; then
-    rm -r $workingMount/*
-fi
+# if [ -f $stateMount/FinaliseS2Workflow.json ]; then
+#     rm -r $workingMount/*
+# fi

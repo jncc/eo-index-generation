@@ -15,8 +15,7 @@ from workflow.processing.PrepareProcessing import PrepareProcessing
 log = logging.getLogger('luigi-interface')
 
 
-@requires(PrepareProcessing)
-class GenerateS1Indices(luigi.Task):
+class GenerateS1Index(luigi.Task):
     productId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
     workingFolder = luigi.Parameter(default=defaults.Paths["output"])
@@ -24,15 +23,13 @@ class GenerateS1Indices(luigi.Task):
     vhBand = luigi.IntParameter(default=defaults.S1IndexDefaults["vhBand"])
     threshold = luigi.IntParameter(default=defaults.S1IndexDefaults["threshold"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
-    indices = EnumListParameter(
+    index = EnumListParameter(
         enum=defaults.S1Indices,
-        description="A comma separated list of any of RVI,VVVH,VHVV,RFDI",
-        default=defaults.S1IndexDefaults["defaultIndices"])
-    parallel = luigi.Parameter(default=None)
+        description="One of RVI,VVVH,VHVV,RFDI")
+    ardFiles = luigi.ListParameter()
+    _stateFileName = luigi.Parameter()
 
     def run(self):
-        with self.input().open('r') as pp:
-            ardFiles = (json.load(pp))["ardFiles"]
 
         robjects.r(f"setwd('{self.rFunctionRoot}')")
 
@@ -45,7 +42,7 @@ class GenerateS1Indices(luigi.Task):
 
         runS1Indices = robjects.r['runS1Indices']
 
-        imagePath = seq(ardFiles) \
+        imagePath = seq(self.ardFiles) \
             .filter(lambda x: x.lower().endswith(".tif")) \
             .first()
 
@@ -89,5 +86,47 @@ class GenerateS1Indices(luigi.Task):
             json.dump(output, o, indent=4)
 
     def output(self):
-        outFile = os.path.join(self.stateFolder, f"GenerateS1Indices{'_' + self.parallel if self.parallel else ''}.json")
+        outFile = os.path.join(self.stateFolder, self._stateFileName)
+        return LocalTarget(outFile)
+
+
+@requires(PrepareProcessing)
+class GenerateS1Indices(luigi.Task):
+    productId = luigi.Parameter()
+    indices = EnumListParameter(
+        enum=defaults.S1Indices,
+        description="A comma separated list of any of RVI,VVVH,VHVV,RFDI",
+        default=defaults.S1IndexDefaults["defaultIndices"])
+
+    def run(self):
+        with self.input().open('r') as pp:
+            ardFiles = (json.load(pp))["ardFiles"]
+
+        indexGenerationTasks = []
+        for index in self.indices:
+            indexGenerationTasks.append(
+                GenerateS1Index(
+                    productId=self.productId,
+                    indices=[index],
+                    ardFiles=ardFiles,
+                    _stateFileName=f"GenerateS1Index_{index.value}.json"
+                )
+            )
+
+        yield indexGenerationTasks
+
+        indicesProducts = []
+        for task in indexGenerationTasks:
+            with task.output().open('r') as o:
+                indicesProducts.append(*json.load(o)["indicesFiles"])
+
+        output = {
+            "indicesFiles": indicesProducts
+        }
+
+        with self.output().open('w') as o:
+            json.dump(output, o, indent=4)
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, 'GenerateS1Indices.json')
         return LocalTarget(outFile)

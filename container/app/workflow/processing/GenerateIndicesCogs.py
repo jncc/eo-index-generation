@@ -101,18 +101,15 @@ class GenerateIndicesCogs(luigi.Task):
         with self.output().open('w') as o:
             json.dump(output, o, indent=4)
 
-    # def output(self):
-    #     outFile = os.path.join(self.stateFolder, self._stateFileName)
-    #     return LocalTarget(outFile)
+    def output(self):
+        outFile = os.path.join(self.stateFolder, self._stateFileName)
+        return LocalTarget(outFile)
 
 
 @requires(GenerateS1Indices)
 class GenerateIndicesCogsForS1(GenerateIndicesCogs):
-    parallel = luigi.Parameter(default=None)
 
-    def output(self):
-        outFile = os.path.join(self.stateFolder, f"GenerateIndicesCogsForS1{'_' + self.parallel if self.parallel else ''}.json")
-        return LocalTarget(outFile)
+    _stateFileName = "GenerateIndicesCogsForS1.json"
 
     def nullFunction(self):
         pass
@@ -120,11 +117,8 @@ class GenerateIndicesCogsForS1(GenerateIndicesCogs):
 
 @requires(GenerateS2Indices)
 class GenerateIndicesCogsForS2(GenerateIndicesCogs):
-    parallel = luigi.Parameter(default=None)
 
-    def output(self):
-        outFile = os.path.join(self.stateFolder, f"GenerateIndicesCogsForS2{'_' + self.parallel if self.parallel else ''}.json")
-        return LocalTarget(outFile)
+    _stateFileName = "GenerateIndicesCogsForS2.json"
 
     def nullFunction(self):
         pass

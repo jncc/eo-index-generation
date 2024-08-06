@@ -31,7 +31,6 @@ class GenerateS2Indices(luigi.Task):
     nirBand = luigi.IntParameter(default=defaults.S2IndexDefaults["nirBand"])
     swirBand1 = luigi.IntParameter(default=defaults.S2IndexDefaults["swirBand1"])
     swirBand2 = luigi.IntParameter(default=defaults.S2IndexDefaults["swirBand2"])
-    parallel = luigi.Parameter(default=None)
 
     def run(self):
         with self.input().open('r') as pp:
@@ -96,5 +95,5 @@ class GenerateS2Indices(luigi.Task):
             json.dump(output, o, indent=4)
 
     def output(self):
-        outFile = os.path.join(self.stateFolder, f"GenerateS2Indices{'_' + self.parallel if self.parallel else ''}.json")
+        outFile = os.path.join(self.stateFolder, 'GenerateS2Indices.json')
         return LocalTarget(outFile)
