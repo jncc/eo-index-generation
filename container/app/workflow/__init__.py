@@ -6,4 +6,4 @@ import workflow.processing.GenerateS2Indices
 import workflow.processing.GenerateIndicesCogs
 import workflow.processing.CopyIndicesCogsToOutput
 import workflow.processing.ValidateIndices
-import workflow.processing.FinaliseWorkflow
+# import workflow.processing.FinaliseWorkflow
