@@ -11,4 +11,5 @@
 
 if [ -f $stateMount/ValidateIndicesForS2.json ]; then
     rm -r $workingMount/*
+    rm $inputMount/$productId*
 fi
