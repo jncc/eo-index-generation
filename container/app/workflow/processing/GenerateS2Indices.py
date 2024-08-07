@@ -15,16 +15,14 @@ from workflow.processing.MaskGranule import MaskGranule
 log = logging.getLogger('luigi-interface')
 
 
-@requires(MaskGranule)
-class GenerateS2Indices(luigi.Task):
+class GenerateS2Index(luigi.Task):
     productId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
     workingFolder = luigi.Parameter(default=defaults.Paths["working"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
-    indices = luigi.parameter.EnumListParameter(
+    index = luigi.parameter.EnumListParameter(
         enum=defaults.S2Indices,
-        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL",
-        default=defaults.S2IndexDefaults["defaultIndices"])
+        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL")
     rBand = luigi.IntParameter(default=defaults.S2IndexDefaults["rBand"])
     gBand = luigi.IntParameter(default=defaults.S2IndexDefaults["gBand"])
     bBand = luigi.IntParameter(default=defaults.S2IndexDefaults["bBand"])
@@ -32,9 +30,11 @@ class GenerateS2Indices(luigi.Task):
     swirBand1 = luigi.IntParameter(default=defaults.S2IndexDefaults["swirBand1"])
     swirBand2 = luigi.IntParameter(default=defaults.S2IndexDefaults["swirBand2"])
 
+    ardFiles = luigi.Parameter()
+    _stateFileName = luigi.Parameter()
+
     def run(self):
-        with self.input().open('r') as pp:
-            imagePath = (json.load(pp))["maskedArdFile"]
+        imagePath = self.ardFiles
 
         robjects.r(f"setwd('{self.rFunctionRoot}')")
 
@@ -48,7 +48,7 @@ class GenerateS2Indices(luigi.Task):
 
         runS2Indices = robjects.r['runS2Indices']
 
-        indexList = seq(self.indices) \
+        indexList = seq(self.index) \
             .map(lambda x: x.value) \
             .distinct() \
             .drop_while(lambda x: not len(x.strip())) \
@@ -89,6 +89,48 @@ class GenerateS2Indices(luigi.Task):
 
         output = {
             "indicesFiles": indicesFiles
+        }
+
+        with self.output().open('w') as o:
+            json.dump(output, o, indent=4)
+
+    def output(self):
+        outFile = os.path.join(self.stateFolder, self._stateFileName)
+        return LocalTarget(outFile)
+
+
+@requires(MaskGranule)
+class GenerateS2Indices(luigi.Task):
+    productId = luigi.Parameter()
+    indices = luigi.parameter.EnumListParameter(
+        enum=defaults.S2Indices,
+        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL",
+        default=defaults.S2IndexDefaults["defaultIndices"])
+
+    def run(self):
+        with self.input().open('r') as pp:
+            ardFiles = (json.load(pp))["maskedArdFile"]
+
+        indexGenerationTasks = []
+        for index in self.indices:
+            indexGenerationTasks.append(
+                GenerateS2Index(
+                    productId=self.productId,
+                    index=[index],
+                    ardFiles=ardFiles,
+                    _stateFileName=f"GenerateS2Index_{index.value}.json"
+                )
+            )
+
+        yield indexGenerationTasks
+
+        indicesProducts = []
+        for task in indexGenerationTasks:
+            with task.output().open('r') as o:
+                indicesProducts.append(*json.load(o)["indicesFiles"])
+
+        output = {
+            "indicesFiles": indicesProducts
         }
 
         with self.output().open('w') as o:
