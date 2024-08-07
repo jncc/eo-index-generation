@@ -77,7 +77,7 @@ class GenerateS1Index(luigi.Task):
             raise Exception("No indices have been computed")
 
         output = {
-            "indicesFiles": indicesFiles
+            "indicesFiles": indicesFiles[0] if len(indicesFiles) == 1 else indicesFiles
         }
 
         with self.output().open('w') as o:

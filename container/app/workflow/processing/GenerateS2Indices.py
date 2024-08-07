@@ -42,7 +42,7 @@ class GenerateS2Indices(luigi.Task):
         indicesProducts = []
         for task in indexGenerationTasks:
             with task.output().open('r') as o:
-                indicesProducts.append(*json.load(o)["indicesFiles"])
+                indicesProducts.append(json.load(o)["indicesFiles"])
 
         output = {
             "indicesFiles": indicesProducts
