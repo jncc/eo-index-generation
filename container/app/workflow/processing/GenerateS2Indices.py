@@ -22,7 +22,7 @@ class GenerateS2Index(luigi.Task):
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     index = luigi.parameter.EnumListParameter(
         enum=defaults.S2Indices,
-        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL")
+        description="One of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL")
     rBand = luigi.IntParameter(default=defaults.S2IndexDefaults["rBand"])
     gBand = luigi.IntParameter(default=defaults.S2IndexDefaults["gBand"])
     bBand = luigi.IntParameter(default=defaults.S2IndexDefaults["bBand"])
