@@ -8,13 +8,13 @@ import logging
 from luigi.util import requires
 from luigi import LocalTarget
 
-from workflow.processing.MaskGranule import MaskGranule
+from workflow.processing.PrepareProcessing import PrepareProcessing
 from workflow.processing.GenerateS2Index import GenerateS2Index
 
 log = logging.getLogger('luigi-interface')
 
 
-@requires(MaskGranule)
+@requires(PrepareProcessing)
 class GenerateS2Indices(luigi.Task):
     productId = luigi.Parameter()
     indices = luigi.parameter.EnumListParameter(
@@ -24,7 +24,7 @@ class GenerateS2Indices(luigi.Task):
 
     def run(self):
         with self.input().open('r') as pp:
-            ardFiles = (json.load(pp))["maskedArdFile"]
+            ardFiles = (json.load(pp))["ardFiles"][0]
 
         indexGenerationTasks = []
         for index in self.indices:
