@@ -1,1 +1,1 @@
-ceda_ard_finder @ git+ssh://git@github.com/jncc/ceda_ard_finder.git@feature/ard-filter
+ceda_ard_finder @ git+ssh://git@github.com/jncc/ceda_ard_finder.git@feature/remove-cloud-masking
