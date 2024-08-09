@@ -80,7 +80,6 @@ RUN chmod +rx /app/exec.sh \
     && mkdir -p /working/ \
     && mkdir -p /output/ 
 
-COPY config/app/BUILD-VERSION.txt /app
 
 EXPOSE 8082
 
