@@ -46,14 +46,18 @@ WORKDIR /app/r-functions/
 
 RUN mkdir -p /app/renv/
 
+# Install renv
+RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))"
+
+# Copy the renv files
 COPY app/r-functions/renv/ ./renv/
 COPY app/r-functions/.Rprofile .
 COPY app/r-functions/renv.lock .
 
 ENV RENV_PATHS_ROOT=/app/renv
 
-RUN  R -e "if (!requireNamespace('remotes')) install.packages('remotes'); remotes::install_github('rstudio/renv')"  && \
-    R -e "renv::consent(provided = TRUE); renv::activate(); renv::restore(lockfile='/app/r-functions/renv.lock')"
+# Restore the renv environment
+RUN R -e "renv::consent(provided = TRUE); renv::restore(lockfile='/app/r-functions/renv.lock')"
 
 # Install app
 WORKDIR /app
