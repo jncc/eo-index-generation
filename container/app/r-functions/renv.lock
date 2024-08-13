@@ -58,14 +58,14 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.12",
+      "Version": "1.0.13",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "methods",
         "utils"
       ],
-      "Hash": "5ea2700d21e038ace58269ecdbeb9ec0"
+      "Hash": "f27411eb6d9c3dada5edd444b8416675"
     },
     "class": {
       "Package": "class",
@@ -128,7 +128,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
+      "Hash": "81d8f0b59c994d785ad85797601823b9"
     },
     "e1071": {
       "Package": "e1071",
@@ -182,7 +182,7 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.22-6",
+      "Version": "0.22-5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -193,7 +193,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "cc5ac1ba4c238c7ca9fa6a87ca11a7e2"
+      "Hash": "7c5e89f04e72d6611c77451f6331a091"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -233,7 +233,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "15da5a8412f317beeee6175fbc76f4bb"
+      "Hash": "d6d0adcbc0f2fa6ff6e98dd0ae93882a"
     },
     "pkgconfig": {
       "Package": "pkgconfig",
@@ -243,7 +243,7 @@
       "Requirements": [
         "utils"
       ],
-      "Hash": "01f28d4278f15c76cddbea05899c5d6f"
+      "Hash": "d08b38afbd25c46077ed67602381291a"
     },
     "proxy": {
       "Package": "proxy",
@@ -288,18 +288,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.7.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "renv",
-      "RemoteUsername": "rstudio",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "5d0d52c395e569f7f24df4288d949cef95efca4e",
+      "Version": "1.0.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "utils"
       ],
-      "Hash": "b3e7a324fcdbee67a29fceab1ef5271f"
+      "Hash": "397b7b2a265bc5a7a06852524dabae20"
     },
     "rjson": {
       "Package": "rjson",
@@ -324,7 +319,7 @@
     },
     "s2": {
       "Package": "s2",
-      "Version": "1.1.6",
+      "Version": "1.1.7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -332,7 +327,7 @@
         "Rcpp",
         "wk"
       ],
-      "Hash": "32f7b1a15bb01ae809022960abad5363"
+      "Hash": "3c8013cdd7f1d20de5762e3f97e5e274"
     },
     "sf": {
       "Package": "sf",
@@ -433,7 +428,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "a84e2cc86d07289b3b6f5069df7a004c"
+      "Hash": "4365264443928ad5ba1295beab017f87"
     },
     "tidyselect": {
       "Package": "tidyselect",
@@ -470,7 +465,7 @@
       "Requirements": [
         "R"
       ],
-      "Hash": "62b65c52671e6665f803ff02954446e9"
+      "Hash": "c1a26f8c1bd6464c8cd74af9c2f35322"
     },
     "vctrs": {
       "Package": "vctrs",
@@ -488,7 +483,7 @@
     },
     "withr": {
       "Package": "withr",
-      "Version": "3.0.0",
+      "Version": "3.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -496,7 +491,7 @@
         "grDevices",
         "graphics"
       ],
-      "Hash": "d31b6c62c10dcf11ec530ca6b0dd5d35"
+      "Hash": "f67d8fc354f44b16fc494f86f1ddda89"
     },
     "wk": {
       "Package": "wk",
