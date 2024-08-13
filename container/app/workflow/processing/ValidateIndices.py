@@ -186,23 +186,21 @@ class ValidateIndices(luigi.Task):
 
 @requires(CopyIndicesCogsToOutputForS1)
 class ValidateIndicesForS1(ValidateIndices):
-    _stateFileName = "ValidateIndicesForS1.json"
+
     _satellite = "S1"
     _index_range = [-504, 504]
 
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
-    def nullFunction(self):
-        pass
+    _stateFileName = "ValidateIndicesForS1.json"
 
 
 @requires(CopyIndicesCogsToOutputForS2)
 class ValidateIndicesForS2(ValidateIndices):
-    _stateFileName = "ValidateIndicesForS2.json"
+
     _satellite = "S2"
     _index_range = [-1, 1]
 
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
-    def nullFunction(self):
-        pass
+    _stateFileName = "ValidateIndicesForS2.json"

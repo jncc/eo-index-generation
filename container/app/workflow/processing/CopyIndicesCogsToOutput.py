@@ -46,8 +46,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
             destination = self.getOutputFilePath(source, indexName)
             destinationDir = os.path.dirname(destination)
 
-            if not os.path.exists(destinationDir):
-                os.makedirs(destinationDir)
+            os.makedirs(destinationDir, exist_ok=True)
 
             shutil.copyfile(source, destination)
 
@@ -70,6 +69,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
 
 @requires(GenerateIndicesCogsForS1)
 class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
+
     _stateFileName = "CopyIndicesCogsToOutputForS1.json"
 
     def nullFunction(self):
@@ -78,6 +78,7 @@ class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
 
 @requires(GenerateIndicesCogsForS2)
 class CopyIndicesCogsToOutputForS2(CopyIndicesCogsToOutput):
+
     _stateFileName = "CopyIndicesCogsToOutputForS2.json"
 
     def nullFunction(self):

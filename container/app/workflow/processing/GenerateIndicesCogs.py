@@ -68,8 +68,7 @@ class GenerateIndicesCogs(luigi.Task):
 
         cogDir = os.path.join(self.workingFolder, "indices-cogs")
 
-        if not os.path.exists(cogDir):
-            os.makedirs(cogDir)
+        os.makedirs(cogDir, exist_ok=True)
 
         jobList = seq(indicesFiles) \
             .map(lambda x: {
@@ -108,6 +107,7 @@ class GenerateIndicesCogs(luigi.Task):
 
 @requires(ApplyS1IndicesCorrections)
 class GenerateIndicesCogsForS1(GenerateIndicesCogs):
+
     _stateFileName = "GenerateIndicesCogsForS1.json"
 
     def nullFunction(self):
@@ -116,6 +116,7 @@ class GenerateIndicesCogsForS1(GenerateIndicesCogs):
 
 @requires(ApplyS2IndicesCorrections)
 class GenerateIndicesCogsForS2(GenerateIndicesCogs):
+
     _stateFileName = "GenerateIndicesCogsForS2.json"
 
     def nullFunction(self):
