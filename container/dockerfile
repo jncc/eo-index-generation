@@ -80,6 +80,8 @@ RUN chmod +rx /app/exec.sh \
     && mkdir -p /working/ \
     && mkdir -p /output/ 
 
+# Copy any additional build information
+COPY config/app/build-info.json /app
 
 EXPOSE 8082
 
