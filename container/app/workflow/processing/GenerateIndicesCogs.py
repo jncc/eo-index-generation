@@ -9,8 +9,7 @@ from luigi.util import requires
 from luigi import LocalTarget
 from pebble import ProcessPool, ProcessExpired
 from functional import seq
-from workflow.processing.GenerateS1Indices import GenerateS1Indices
-from workflow.processing.GenerateS2Indices import GenerateS2Indices
+from workflow.processing.ApplyIndicesCorrections import ApplyS1IndicesCorrections, ApplyS2IndicesCorrections
 
 log = logging.getLogger('luigi-interface')
 """
@@ -64,8 +63,8 @@ class GenerateIndicesCogs(luigi.Task):
 
     def run(self):
 
-        with self.input().open('r') as ix:
-            indicesFiles = (json.load(ix))["indicesFiles"]
+        with self.input().open('r') as aic:
+            indicesFiles = (json.load(aic))["indicesFiles"]
 
         cogDir = os.path.join(self.workingFolder, "indices-cogs")
 
@@ -106,7 +105,7 @@ class GenerateIndicesCogs(luigi.Task):
         return LocalTarget(outFile)
 
 
-@requires(GenerateS1Indices)
+@requires(ApplyS1IndicesCorrections)
 class GenerateIndicesCogsForS1(GenerateIndicesCogs):
 
     _stateFileName = "GenerateIndicesCogsForS1.json"
@@ -115,7 +114,7 @@ class GenerateIndicesCogsForS1(GenerateIndicesCogs):
         pass
 
 
-@requires(GenerateS2Indices)
+@requires(ApplyS2IndicesCorrections)
 class GenerateIndicesCogsForS2(GenerateIndicesCogs):
 
     _stateFileName = "GenerateIndicesCogsForS2.json"

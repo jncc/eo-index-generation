@@ -48,10 +48,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
 
             os.makedirs(destinationDir, exist_ok=True)
 
-            if not os.path.exists(destination):
-                shutil.copyfile(source, destination)
-            else:
-                log.warning(f'File already exists at {destination}, was it copied across by another process?')
+            shutil.copyfile(source, destination)
 
             indicesCogFiles.append({
                 "indexName": indexName,
