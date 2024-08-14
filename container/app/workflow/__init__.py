@@ -1,6 +1,5 @@
 import workflow.common.Defaults
 import workflow.processing.PrepareProcessing
-import workflow.processing.MaskGranule
 import workflow.processing.GenerateS1Index
 import workflow.processing.GenerateS1Indices
 import workflow.processing.GenerateS2Index
