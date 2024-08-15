@@ -2,13 +2,24 @@ import luigi
 import json
 import os
 import re
-from luigi.util import requires
+import logging
+from luigi.util import inherits, common_params
 from ceda_ard_finder import CreateSymlinks
 
+log = logging.getLogger('luigi-interface')
 
-@requires(CreateSymlinks)
+
+@inherits(CreateSymlinks)
 class GetArdProducts(luigi.Task):
     stateFolder = luigi.Parameter()
+    basketFolder = luigi.Parameter()
+    productLocation = ""  # Placeholder required for inheritance
+
+    def requires(self):
+        return CreateSymlinks(
+            productLocation=self.basketFolder,  # The symlink location is different in the CEDA ARD Finder ...
+            **common_params(self, CreateSymlinks)  # ... Everything else is the same
+        )
 
     @staticmethod
     def parse_product(product):
