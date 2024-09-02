@@ -2,13 +2,22 @@ import luigi
 import json
 import os
 import re
+import logging
 from luigi.util import requires
 from ceda_ard_finder import CreateSymlinks
+
+log = logging.getLogger('luigi-interface')
 
 
 @requires(CreateSymlinks)
 class GetArdProducts(luigi.Task):
     stateFolder = luigi.Parameter()
+    basketFolder = luigi.Parameter()
+
+    @property
+    def productLocation(self):
+        # required for the CreateSymlinks task
+        return self.basketFolder
 
     @staticmethod
     def parse_product(product):
