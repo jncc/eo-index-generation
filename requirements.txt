@@ -1,1 +1,1 @@
-ceda_ard_finder @ git+ssh://git@github.com/jncc/ceda_ard_finder.git
+ceda_ard_finder @ git+ssh://git@github.com/jncc/ceda_ard_finder.git@v0.0.1
