@@ -16,7 +16,7 @@ log = logging.getLogger('luigi-interface')
 class GenerateS1Index(luigi.Task):
     productId = luigi.Parameter()
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
-    workingFolder = luigi.Parameter(default=defaults.Paths["output"])
+    workingFolder = luigi.Parameter(default=defaults.Paths["working"])
     vvBand = luigi.IntParameter(default=defaults.S1IndexDefaults["vvBand"])
     vhBand = luigi.IntParameter(default=defaults.S1IndexDefaults["vhBand"])
     threshold = luigi.IntParameter(default=defaults.S1IndexDefaults["threshold"])
