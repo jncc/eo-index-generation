@@ -31,7 +31,7 @@ class GenerateS1Indices(luigi.Task):
             indexGenerationTasks.append(
                 GenerateS1Index(
                     productId=self.productId,
-                    index=[index],
+                    index=index,
                     ardFiles=ardFiles,
                     _stateFileName=f"GenerateS1Index_{index.value}.json"
                 )

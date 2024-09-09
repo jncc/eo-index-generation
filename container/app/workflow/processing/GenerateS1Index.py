@@ -6,7 +6,7 @@ import re
 import rpy2.robjects as robjects
 import workflow.common.Defaults as defaults
 
-from luigi.parameter import EnumListParameter
+from luigi.parameter import EnumParameter
 from luigi import LocalTarget
 from functional import seq
 
@@ -21,7 +21,7 @@ class GenerateS1Index(luigi.Task):
     vhBand = luigi.IntParameter(default=defaults.S1IndexDefaults["vhBand"])
     threshold = luigi.IntParameter(default=defaults.S1IndexDefaults["threshold"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
-    index = EnumListParameter(
+    index = EnumParameter(
         enum=defaults.S1Indices,
         description="One of RVI,VVVH,VHVV,RFDI")
     ardFiles = luigi.ListParameter()
@@ -44,12 +44,6 @@ class GenerateS1Index(luigi.Task):
             .filter(lambda x: x.lower().endswith(".tif")) \
             .first()
 
-        indices = seq(self.index) \
-            .map(lambda x: x.value) \
-            .distinct() \
-            .drop_while(lambda x: not len(x.strip())) \
-            .reduce(lambda x, y: f"{x}, {y}")
-
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         outPath = os.path.join(self.workingFolder, "indices-tifs", "sentinel_1", datestamp[0:4], datestamp[4:6], datestamp[6:8])
 
@@ -57,7 +51,7 @@ class GenerateS1Index(luigi.Task):
 
         log.info(f"""Generating S1 indices with imagepath - {imagePath}, 
             fileout_path - {outPath}, 
-            index - {indices}, 
+            index - {self.index.value.strip()}, 
             vh - {self.vvBand}, 
             vv - {self.vhBand},
             threshold - {self.threshold}""")
@@ -68,7 +62,7 @@ class GenerateS1Index(luigi.Task):
             outPath,
             self.vvBand,
             self.vhBand,
-            indices,
+            self.index.value.strip(),
             self.threshold)
 
         indicesFiles = json.loads(rawData[0])

@@ -31,7 +31,7 @@ class GenerateS2Indices(luigi.Task):
             indexGenerationTasks.append(
                 GenerateS2Index(
                     productId=self.productId,
-                    index=[index],
+                    index=index,
                     ardFiles=ardFiles,
                     _stateFileName=f"GenerateS2Index_{index.value}.json"
                 )

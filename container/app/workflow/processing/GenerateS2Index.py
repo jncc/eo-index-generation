@@ -6,6 +6,7 @@ import rpy2.robjects as robjects
 import workflow.common.Defaults as defaults
 import logging
 
+from luigi.parameter import EnumParameter
 from luigi import LocalTarget
 from functional import seq
 
@@ -17,7 +18,7 @@ class GenerateS2Index(luigi.Task):
     rFunctionRoot = luigi.Parameter(default=defaults.RFunctionRoot)
     workingFolder = luigi.Parameter(default=defaults.Paths["working"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
-    index = luigi.parameter.EnumListParameter(
+    index = luigi.parameter.EnumParameter(
         enum=defaults.S2Indices,
         description="One of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL")
     rBand = luigi.IntParameter(default=defaults.S2IndexDefaults["rBand"])
@@ -45,12 +46,6 @@ class GenerateS2Index(luigi.Task):
 
         runS2Indices = robjects.r['runS2Indices']
 
-        indexList = seq(self.index) \
-            .map(lambda x: x.value) \
-            .distinct() \
-            .drop_while(lambda x: not len(x.strip())) \
-            .reduce(lambda x, y: f"{x}, {y}")
-
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         outPath = os.path.join(self.workingFolder, "indices-tifs", "sentinel_2", datestamp[0:4], datestamp[4:6], datestamp[6:8])
 
@@ -58,7 +53,7 @@ class GenerateS2Index(luigi.Task):
 
         log.info(f"""Generating S2 indices with imagepath - {imagePath}, 
             fileout_path - {outPath}, 
-            index - {indexList}, 
+            index - {self.index.value.strip()}, 
             r - {self.rBand}, 
             g - {self.gBand}, 
             b - {self.bBand},
@@ -70,7 +65,7 @@ class GenerateS2Index(luigi.Task):
             self.productId,
             imagePath,
             outPath,
-            indexList,
+            self.index.value.strip(),
             self.rBand,
             self.gBand,
             self.bBand,
