@@ -171,7 +171,7 @@ class ValidateIndices(luigi.Task):
         processed_results = self.process(results)
 
         output = {
-            "prodcutId": self.productId,
+            "productId": self.productId,
             "qcErrors": processed_results[1] if processed_results[1] else False,
             "qcResults": processed_results[0]
         }
