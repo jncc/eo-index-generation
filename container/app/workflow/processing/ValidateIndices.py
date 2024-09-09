@@ -22,12 +22,12 @@ log = logging.getLogger('luigi-interface')
 class ValidateIndices(luigi.Task):
     productId = luigi.Parameter()
     ardPath = luigi.Parameter()
+    indexQcRange = luigi.ListParameter()
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
 
     _stateFileName = ""
     _satellite = ""
-    _index_range = []
 
     @staticmethod
     def get_size(path):
@@ -163,7 +163,7 @@ class ValidateIndices(luigi.Task):
                 index,
                 index_filename,
                 ardFile,
-                self._index_range
+                self.indexQcRange
             ))
 
         pool = mp.Pool(len(qc_data))
@@ -188,8 +188,7 @@ class ValidateIndices(luigi.Task):
 class ValidateIndicesForS1(ValidateIndices):
 
     _satellite = "S1"
-    _index_range = [-504, 504]
-
+    indexQcRange = luigi.ListParameter(default=defaults.S1IndexDefaults["qcRange"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
     _stateFileName = "ValidateIndicesForS1.json"
@@ -199,8 +198,7 @@ class ValidateIndicesForS1(ValidateIndices):
 class ValidateIndicesForS2(ValidateIndices):
 
     _satellite = "S2"
-    _index_range = [-1, 1]
-
+    indexQcRange = luigi.ListParameter(default=defaults.S2IndexDefaults["qcRange"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
     _stateFileName = "ValidateIndicesForS2.json"

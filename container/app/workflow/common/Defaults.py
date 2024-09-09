@@ -27,7 +27,8 @@ S1IndexDefaults = {
     "defaultIndices": [S1Indices.RVI, S1Indices.VVVH, S1Indices.VHVV, S1Indices.RFDI],
     "vvBand": 1,
     "vhBand": 2,
-    "threshold": 50
+    "threshold": 50,
+    "qcRange": [-504, 504]
 }
 
 
@@ -63,7 +64,8 @@ S2IndexDefaults = {
     "bBand": 1,
     "nirBand": 7,
     "swirBand1": 9,
-    "swirBand2": 10
+    "swirBand2": 10,
+    "qcRange": [-1, 1]
 }
 
 CogProcess = {
