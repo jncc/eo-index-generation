@@ -3,21 +3,26 @@ import json
 import os
 import re
 import logging
-from luigi.util import requires
 from ceda_ard_finder import CreateSymlinks
 
 log = logging.getLogger('luigi-interface')
 
 
-@requires(CreateSymlinks)
 class GetArdProducts(luigi.Task):
     stateFolder = luigi.Parameter()
     basketFolder = luigi.Parameter()
 
-    @property
-    def productLocation(self):
-        # required for the CreateSymlinks task
-        return self.basketFolder
+    # Ceda Ard Finder Params
+    startDate = luigi.DateParameter()
+    endDate = luigi.DateParameter()
+    ardFilter = luigi.Parameter()
+    spatialOperator = luigi.ChoiceParameter(choices=["", "intersects", "disjoint", "contains", "within"])
+    satelliteFilter = luigi.Parameter()
+
+    # Optional, rarely used Params
+    orbit = luigi.IntParameter(default=-9999)
+    orbitDirection = luigi.Parameter(default="")
+    wkt = luigi.Parameter(default="")
 
     @staticmethod
     def parse_product(product):
@@ -29,8 +34,22 @@ class GetArdProducts(luigi.Task):
         return parsedProduct
 
     def run(self):
+        task = CreateSymlinks(
+            stateFolder=self.stateFolder,
+            productLocation=self.basketFolder,
+            startDate=self.startDate,
+            endDate=self.endDate,
+            ardFilter=self.ardFilter,
+            spatialOperator=self.spatialOperator,
+            satelliteFilter=self.satelliteFilter,
+            orbit=self.orbit,
+            orbitDirection=self.orbitDirection,
+            wkt=self.wkt,
+        )
+        result = yield task
+
         products = []
-        with self.input().open("r") as createSymlinksFile:
+        with result.open("r") as createSymlinksFile:
             products = [self.parse_product(os.path.basename(product)) for product in json.load(createSymlinksFile)["products"]]
 
         with self.output().open("w") as outFile:
