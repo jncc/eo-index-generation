@@ -3,6 +3,7 @@ import json
 import os
 import re
 import logging
+from functional import seq
 from ceda_ard_finder import CreateSymlinks
 
 log = logging.getLogger('luigi-interface')
@@ -24,15 +25,6 @@ class GetArdProducts(luigi.Task):
     orbitDirection = luigi.Parameter(default="")
     wkt = luigi.Parameter(default="")
 
-    @staticmethod
-    def parse_product(product):
-        parsedProduct = ""
-        if product.startswith("S1"):
-            parsedProduct = re.sub(r"\.tif$", "", product)
-        elif product.startswith("S2"):
-            parsedProduct = re.sub(r"_vmsk_sharp_rad_srefdem_stdsref\.tif$", "", product)
-        return parsedProduct
-
     def run(self):
         task = CreateSymlinks(
             stateFolder=self.stateFolder,
@@ -50,7 +42,11 @@ class GetArdProducts(luigi.Task):
 
         products = []
         with result.open("r") as createSymlinksFile:
-            products = [self.parse_product(os.path.basename(product)) for product in json.load(createSymlinksFile)["products"]]
+            products = seq(json.load(createSymlinksFile)["products"]) \
+                .map(lambda x: os.path.basename(x)) \
+                .map(lambda x: re.sub(r"\.tif$", "", x)) \
+                .map(lambda x: re.sub(r"_vmsk_sharp_rad_srefdem_stdsref$", "", x)) \
+                .to_list()
 
         with self.output().open("w") as outFile:
             output = {
