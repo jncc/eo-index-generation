@@ -69,5 +69,5 @@ S2IndexDefaults = {
 }
 
 CogProcess = {
-    "maxCogProcesss": 3
+    "maxCogProcesss": 4
 }
