@@ -4,7 +4,6 @@ import json
 import workflow.common.Defaults as defaults
 import logging
 import re
-import pandas as pd
 from functional import seq
 
 from luigi.util import requires
