@@ -42,7 +42,7 @@ class ValidateIndex(luigi.Task):
         valid_cog, _, _ = rio_cogeo.cog_validate(self.indexFilePath)
 
         with rasterio.open(self.indexFilePath) as dataset:
-            meta = dataset.profile  # width, hight, crs etc
+            meta = {}
             indexBounds = dataset.bounds  # get boundary extent
             idt = dataset.transform  # get transformation params
             pixel = dataset.res  # get pixel size
@@ -50,21 +50,24 @@ class ValidateIndex(luigi.Task):
             image = dataset.read()
 
             # Set all nodata values to 0
-            image[image == meta["nodata"]] = 0
+            image[image == dataset.nodata] = 0
 
-            meta["min"] = image.min()
-            meta["max"] = image.max()
+            meta["min"] = str(image.min())
+            meta["max"] = str(image.max())
+            meta["dtype"] = str(image.dtype)
             meta["path"] = self.indexFilePath
             meta["filesize"] = self.get_size()
             meta["index"] = self.index
             meta["overview"] = bool(dataset.overviews(1))
             meta["is_resolution_10"] = bool(pixel == (10.0, 10.0))
             meta["is_units_m"] = bool(units == "metre")
-            meta["QC_date"] = date.today()
-            meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", self.indexFileName).group(1), "%Y%m%d").date()
+            meta["QC_date"] = date.today().isoformat()
+            meta["ARD_date"] = datetime.strptime(re.search(r".*_(\d{4}\d{2}\d{2})_.*", self.indexFileName).group(1), "%Y%m%d").date().isoformat()
             meta["tile"] = re.sub(fr"_{self.index}.tif$", "", self.indexFileName, flags=re.IGNORECASE)
+            meta["nodata"] = str(dataset.nodata)
+            meta["crs"] = dataset.crs.to_string()
 
-            meta["within_range"] = bool(meta["min"] > self.indexQcRange[0] and meta["max"] < self.indexQcRange[1])
+            meta["within_range"] = bool(image.min() > self.indexQcRange[0] and image.max() < self.indexQcRange[1])
 
             meta["valid_cog"] = valid_cog
 

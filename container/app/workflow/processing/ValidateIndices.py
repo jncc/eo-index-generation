@@ -5,6 +5,7 @@ import workflow.common.Defaults as defaults
 import logging
 import re
 import pandas as pd
+from functional import seq
 
 from luigi.util import requires
 from luigi import LocalTarget
@@ -28,43 +29,38 @@ class ValidateIndices(luigi.Task):
 
     @staticmethod
     def process(results):
-        df = pd.DataFrame.from_dict(results)
-        df["Check"] = df.index.isin(df.sample(frac=0.05, random_state=1).index)  # 5% check
 
-        err = []
-
-        len(df["crs"].unique()) == 1 or err.append("issue with CRS consistency")
-        len(df["dtype"].unique()) == 1 or err.append("issue with data type consistency")
-        len(df["within_range"].unique()) == 1 or err.append("issue with index range consistency")
-        len(df["valid_cog"].unique()) == 1 or err.append("issue with one or more COGS")
-        len(df["nodata"].unique()) == 1 or err.append("Inconsistent no data values")
-        len(df["extent_match"].unique()) == 1 or err.append("Inconsistent extent")
-        len(df["aligned"].unique()) == 1 or err.append("Inconsistent pixel alignement")
-        len(df["is_resolution_10"].unique()) == 1 or err.append("Inconsistent resolution")
-        len(df["is_units_m"].unique()) == 1 or err.append("Inconsistent units")
-
-        if err:
-            log.error(f"Issues with QC: {err}")
-
-        res = {}
-        dfc = df.copy()
-
-        object_cols = dfc.select_dtypes(include=['object']).columns  # Convert objects to string so (hopefully) no error with json dump
-        excluded_cols = ["ard_transform", "transform"]  # ... Exclude known good columns
-
-        object_cols = [col for col in object_cols if col not in excluded_cols]
-        dfc[object_cols] = dfc[object_cols].astype(str)
-
-        dfc.set_index(["tile", "index"], inplace=True)
-        dfc = dfc.T
-
-        for (product, index) in dfc.columns:
-            if product not in res:
-                res[product] = {index: dfc[product, index].to_dict()}
+        def check_qc(value, expected=True):
+            if value == expected:
+                return True
             else:
-                res[product].update({index: dfc[product, index].to_dict()})
+                return value
 
-        return res, err
+        failedIndices = seq(results) \
+            .map(lambda x: {"index": x["index"], "qc": {
+                "crs": check_qc(x.get("crs"), defaults.QcChecks["crs"]),
+                "dtype": check_qc(x.get("dtype"), defaults.QcChecks["dtype"]),
+                "nodata": check_qc(x.get("nodata"), defaults.QcChecks["nodata"]),
+                "valid_cog": check_qc(x.get("valid_cog")),
+                "within_range": check_qc(x.get("within_range")),
+                "extent_match": check_qc(x.get("extent_match")),
+                "aligned": check_qc(x.get("aligned")),
+                "is_resolution_10": check_qc(x.get("is_resolution_10")),
+                "is_units_m": check_qc(x.get("is_units_m")),
+            }}) \
+            .map(lambda x: {"index": x["index"], "qc": {k: v for k, v in x["qc"].items() if v is not True}}) \
+            .filter(lambda x: x["qc"] != {}) \
+            .to_list()
+
+        errors = []
+        for failedIndex in failedIndices:
+            for k, v in failedIndex["qc"].items():
+                errors.append(f"{failedIndex['index']} {k} = {v} (Expected: {defaults.QcChecks.get(k, True)})")
+
+        if errors:
+            raise ValueError("QC Check(s) Failed\n" + "\n".join(errors))
+
+        return True
 
     def run(self):
         with self.input().open('r') as CopyIndicesCogsToOutput:
@@ -103,8 +99,7 @@ class ValidateIndices(luigi.Task):
 
         output = {
             "productId": self.productId,
-            "qcErrors": processed_results[1] if processed_results[1] else False,
-            "qcResults": processed_results[0]
+            "qcPassed": True if processed_results else False,
         }
 
         with self.output().open('w') as o:
@@ -119,7 +114,7 @@ class ValidateIndices(luigi.Task):
 class ValidateIndicesForS1(ValidateIndices):
 
     _satellite = "S1"
-    indexQcRange = luigi.ListParameter(default=defaults.S1IndexDefaults["qcRange"])
+    indexQcRange = luigi.ListParameter(default=defaults.QcChecks["range"]["S1"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
     _stateFileName = "ValidateIndicesForS1.json"
@@ -129,7 +124,7 @@ class ValidateIndicesForS1(ValidateIndices):
 class ValidateIndicesForS2(ValidateIndices):
 
     _satellite = "S2"
-    indexQcRange = luigi.ListParameter(default=defaults.S2IndexDefaults["qcRange"])
+    indexQcRange = luigi.ListParameter(default=defaults.QcChecks["range"]["S2"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
     _stateFileName = "ValidateIndicesForS2.json"

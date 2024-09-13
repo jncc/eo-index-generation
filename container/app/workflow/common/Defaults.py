@@ -28,7 +28,6 @@ S1IndexDefaults = {
     "vvBand": 1,
     "vhBand": 2,
     "threshold": 50,
-    "qcRange": [-504, 504]
 }
 
 
@@ -65,8 +64,19 @@ S2IndexDefaults = {
     "nirBand": 7,
     "swirBand1": 9,
     "swirBand2": 10,
-    "qcRange": [-1, 1]
 }
+
+
+QcChecks = {
+    "crs": "EPSG:27700",
+    "dtype": "float32",
+    "nodata": "-9999.0",
+    "range": {
+        "S1": [-504, 504],
+        "S2": [-1, 1]
+    }
+}
+
 
 CogProcess = {
     "maxCogProcesss": 4
