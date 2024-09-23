@@ -1,0 +1,11 @@
+import workflow.common.Defaults
+import workflow.processing.PrepareProcessing
+import workflow.processing.GenerateS1Index
+import workflow.processing.GenerateS1Indices
+import workflow.processing.GenerateS2Index
+import workflow.processing.GenerateS2Indices
+import workflow.processing.ApplyIndicesCorrections
+import workflow.processing.GenerateIndicesCogs
+import workflow.processing.CopyIndicesCogsToOutput
+import workflow.processing.ValidateIndex
+import workflow.processing.ValidateIndices
