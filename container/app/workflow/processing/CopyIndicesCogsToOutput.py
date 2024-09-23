@@ -26,11 +26,10 @@ class CopyIndicesCogsToOutput(luigi.Task):
     _stateFileName = ""
 
     def getOutputFilePath(self, cogFilePath, indexName):
-        satellite = self.productId[1:2]
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         filename = os.path.basename(cogFilePath)
 
-        outPath = os.path.join(self.outputFolder, f"sentinel_{satellite}", indexName.lower(), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
+        outPath = os.path.join(self.outputFolder, indexName.lower(), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
 
         return outPath
 
