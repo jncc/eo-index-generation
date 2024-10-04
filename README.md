@@ -60,7 +60,7 @@ PYTHONPATH=. luigi --module orchestration SubmitJobsForS1 \
 
 ```
 
-Example command to process S1 indices `RVI` and `VVH` for a single product:
+Example command to process S1 indices `RVI` and `VVVH` for a single product:
 
 (Note: Make sure to fill in the correct bind mounts, and have all the ARD products downloaded and available in the input folder)
 
