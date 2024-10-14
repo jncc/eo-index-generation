@@ -37,6 +37,7 @@ class S2Indices(Enum):
 
     Brightness = "Brightness"
     EVI = "EVI"
+    EVI2 = "EVI2"
     GLI = "GLI"
     GNDVI = "GNDVI"
     NBR = "NBR"

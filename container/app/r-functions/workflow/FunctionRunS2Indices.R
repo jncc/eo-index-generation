@@ -45,6 +45,7 @@ runS2Indices<-function(filebasename, imagepath, fileout_path, index, r, g, b, ni
 
   ## Create indices functions
   EVI_fun <- function(x){2.5*(((x[[nir]]/1000)-(x[[r]]/1000))/(((x[[nir]]/1000)+(6*(x[[r]]/1000))-(7.5*(x[[b]]/1000)))+1))}
+  EVI2_fun <- function(x){2.5*(((x[[nir]]/1000)-(x[[r]]/1000))/((x[[nir]]/1000)+2.4*(x[[r]]/1000)+1))}
   GLI_fun <- function(x){((2*x[[g]])-x[[r]]-x[[b]])/((2*x[[g]])+x[[r]]+x[[b]])}
   GNDVI_fun <- function(x){(x[[nir]]-x[[g]])/(x[[nir]]+x[[g]])}
   RDVI_fun <- function(x){(x[[nir]]-x[[r]])/(x[[nir]]+x[[r]])^0.5}
@@ -62,6 +63,7 @@ runS2Indices<-function(filebasename, imagepath, fileout_path, index, r, g, b, ni
   ## Create lookup table
   all_ind <- tibble::tribble(~name,~formula,
                             "EVI",  EVI_fun,
+                            "EVI2", EVI2_fun,
                             "GLI", GLI_fun,
                             "GNDVI",GNDVI_fun,
                             "RDVI", RDVI_fun,
