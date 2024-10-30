@@ -68,15 +68,52 @@ S2IndexDefaults = {
 }
 
 
-QcChecks = {
-    "crs": "EPSG:27700",
-    "dtype": "float32",
-    "nodata": "-9999.0",
-    "range": {
-        "S1": [-504, 504],
-        "S2": [-1, 1]
+class QcChecks:
+    _defaults = {
+        "crs": "EPSG:27700",
+        "dtype": "float32",
+        "nodata": "-9999.0",
+        "default_range": {
+            "S1": [-504, 504],
+            "S2": [-1, 1]
+        }
     }
-}
+
+    _range_checks = {
+        # Add per-index range checks here
+        S2Indices.EVI2: [-5, 5]
+    }
+
+    @staticmethod
+    def get_defaults():
+        return QcChecks._defaults
+
+    @staticmethod
+    def get_range(index):
+        """
+        Get the QC range for a given ARD index
+
+        :param index: The index to get the range for
+        :type index: str or S1Indices or S2Indices
+
+        :return: The range for the given index
+        :rtype: [int, int]
+
+        :raises ValueError: If the index is not recognised
+        """
+
+        if type(index) == str:
+            if index in S1Indices.__members__:
+                index = S1Indices(index)
+            elif index in S2Indices.__members__:
+                index = S2Indices(index)
+
+        if isinstance(index, S1Indices):
+            return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S1"])
+        elif isinstance(index, S2Indices):
+            return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S2"])
+        else:
+            raise ValueError(f"Failed getting QC range. Unknown index : {index}")
 
 
 CogProcess = {
