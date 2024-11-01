@@ -21,7 +21,6 @@ log = logging.getLogger('luigi-interface')
 class ValidateIndices(luigi.Task):
     productId = luigi.Parameter()
     ardPath = luigi.Parameter()
-    indexQcRange = luigi.ListParameter()
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
 
