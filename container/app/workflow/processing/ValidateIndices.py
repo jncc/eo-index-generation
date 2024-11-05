@@ -100,6 +100,8 @@ class ValidateIndices(luigi.Task):
         output = {
             "productId": self.productId,
             "qcPassed": True if processed_results else False,
+            "qcChecksPerformed": QcChecks.get_defaults(),
+            "perIndexRangeChecks": {k.value: v for k, v in QcChecks._range_checks.items()}
         }
 
         with self.output().open('w') as o:
