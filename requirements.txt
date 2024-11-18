@@ -1,2 +1,2 @@
-ceda_ard_finder @ git+https://github.com/jncc/ceda_ard_finder.git@v0.0.1
+ceda_ard_finder @ git+https://github.com/jncc/ceda_ard_finder.git@v0.0.2-dev
 pyfunctional==1.5.0
