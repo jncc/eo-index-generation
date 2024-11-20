@@ -24,7 +24,7 @@ class S1Indices(Enum):
 
 
 S1IndexDefaults = {
-    "defaultIndices": [S1Indices.RVI, S1Indices.VVVH, S1Indices.VHVV, S1Indices.RFDI],
+    "defaultIndices": [S1Indices.VHVV],
     "vvBand": 1,
     "vhBand": 2,
     "threshold": 50,
@@ -57,7 +57,8 @@ S2IndexDefaults = {
         S2Indices.NDVI,
         S2Indices.NDWI,
         S2Indices.NDMI,
-        S2Indices.NBR
+        S2Indices.NBR,
+        S2Indices.EVI2
     ],
     "rBand": 3,
     "gBand": 2,
