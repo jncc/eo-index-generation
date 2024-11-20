@@ -22,6 +22,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
     productId = luigi.Parameter()
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
+    version = luigi.Parameter(default=defaults.Version)
 
     _stateFileName = ""
 
@@ -29,7 +30,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         filename = os.path.basename(cogFilePath)
 
-        outPath = os.path.join(self.outputFolder, indexName.lower(), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
+        outPath = os.path.join(self.outputFolder, indexName.lower(), self.version, datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
 
         return outPath
 

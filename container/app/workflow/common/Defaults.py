@@ -7,6 +7,8 @@ Paths = {
     "output": "/output"
 }
 
+# Unmasked indices
+Version = "v2"
 
 RFunctionRoot = "/app/r-functions"
 
