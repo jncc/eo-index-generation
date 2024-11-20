@@ -114,8 +114,3 @@ class QcChecks:
             return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S2"])
         else:
             raise ValueError(f"Failed getting QC range. Unknown index : {index}")
-
-
-CogProcess = {
-    "maxCogProcesss": 4
-}
