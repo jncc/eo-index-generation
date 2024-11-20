@@ -23,7 +23,7 @@ class GenerateS1Index(luigi.Task):
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     index = EnumParameter(
         enum=defaults.S1Indices,
-        description="One of RVI,VVVH,VHVV,RFDI")
+        description="One of RVI,VHVV,RFDI")
     ardFiles = luigi.ListParameter()
     _stateFileName = luigi.Parameter()
 

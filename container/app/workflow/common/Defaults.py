@@ -18,7 +18,6 @@ class S1Indices(Enum):
         return '<%s.%s>' % (self.__class__.__name__, self.name)
 
     RVI = "RVI"
-    VVVH = "VVVH"
     VHVV = "VHVV"
     RFDI = "RFDI"
 

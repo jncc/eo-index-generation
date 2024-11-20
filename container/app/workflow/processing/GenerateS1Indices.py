@@ -19,7 +19,7 @@ class GenerateS1Indices(luigi.Task):
     productId = luigi.Parameter()
     indices = EnumListParameter(
         enum=defaults.S1Indices,
-        description="A comma separated list of any of RVI,VVVH,VHVV,RFDI",
+        description="A comma separated list of any of RVI,VHVV,RFDI",
         default=defaults.S1IndexDefaults["defaultIndices"])
 
     def run(self):

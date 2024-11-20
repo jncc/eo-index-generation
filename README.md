@@ -13,7 +13,7 @@ Orchestrates and submits jobs to the JASMIN LOTUS cluster which generate indices
 
 The following indices have been tested and are supported:
 
-* **S1**: `RVI`, `VVVH`, `VHVV`, `RFDI`
+* **S1**: `RVI`, `VHVV`, `RFDI`
 * **S2**: `NBR`, `NDMI`, `NDVI`, `NDWI`
 
 ## Local Development
@@ -37,7 +37,7 @@ apptainer build --force eo-index-container.sif docker-daemon://eo-index-containe
 
 The entire process (Orchestration + Workflow) cannot be tested locally due to the need to mount the CEDA Archive and submit jobs to LOTUS. However, individual components can be tested.
 
-Example command to orchestrate the processing of S1 indices `RVI` and `VVVH` for products between `2022-06-06` and `2022-06-07`:
+Example command to orchestrate the processing of S1 indices `RVI` and `VHVV` for products between `2022-06-06` and `2022-06-07`:
 
 (Note: Install dependencies first `pip install -r requirements.txt` and change paths accordingly)
 
@@ -49,7 +49,7 @@ PYTHONPATH=. luigi --module orchestration SubmitJobsForS1 \
   --basketFolder /ignore/this/basketFolder \
   --outputFolder /ignore/this \
   --containerPath /ignore/this \
-  --indices RVI,VVVH \
+  --indices RVI,VHVV \
   --startDate 2022-06-06 \
   --endDate 2022-06-07 \
   --ardFilter '*' \
@@ -60,7 +60,7 @@ PYTHONPATH=. luigi --module orchestration SubmitJobsForS1 \
 
 ```
 
-Example command to process S1 indices `RVI` and `VVVH` for a single product:
+Example command to process S1 indices `RVI` and `VHVV` for a single product:
 
 (Note: Make sure to fill in the correct bind mounts, and have all the ARD products downloaded and available in the input folder)
 
@@ -74,7 +74,7 @@ apptainer exec \
   eo-index-container.sif /app/exec.sh \
     --module workflow.processing FinaliseS1Workflow \
     --productId S1A_20240303_74_asc_182215_182240_VVVH_G0_GB_OSGB_RTCK_SpkRL \
-    --indices RVI,VVVH \
+    --indices RVI,VHVV \
     --workers 2 \
     --local-scheduler
 ```
