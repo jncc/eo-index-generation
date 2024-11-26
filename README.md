@@ -13,8 +13,8 @@ Orchestrates and submits jobs to the JASMIN LOTUS cluster which generate indices
 
 The following indices have been tested and are supported:
 
-* **S1**: `RVI`, `VHVV`, `RFDI`
-* **S2**: `NBR`, `NDMI`, `NDVI`, `NDWI`
+* **S1**: `VHVV`
+* **S2**: `NBR`, `NDMI`, `NDVI`, `NDWI`, `EVI2`
 
 ## Local Development
 
