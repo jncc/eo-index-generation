@@ -20,7 +20,6 @@ Takes the index files and converts it into a cloud optimised GeoTIFF using
 class GenerateIndicesCogs(luigi.Task):
     workingFolder = luigi.Parameter(default=defaults.Paths["working"])
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
-    maxCogProcesses = luigi.IntParameter(default=defaults.CogProcess["maxCogProcesss"])
 
     _stateFileName = ""
 
@@ -79,7 +78,7 @@ class GenerateIndicesCogs(luigi.Task):
 
         cogFiles = []
 
-        with ProcessPool(max_workers=self.maxCogProcesses) as pool:
+        with ProcessPool(max_workers=len(jobList)) as pool:
 
             generateCogJobs = pool.map(self.generateCogFile, jobList)
 

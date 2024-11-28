@@ -4,18 +4,38 @@ import json
 import logging
 
 from luigi import LocalTarget
-from luigi.util import requires
 
-from orchestration.GetArdProducts import GetArdProducts
+from orchestration.GetArdProducts import GetArdProductsFromFilters, GetArdProductsFromTextFileList
 
 log = logging.getLogger('luigi-interface')
 
 
-@requires(GetArdProducts)
 class SetupWorkDirs(luigi.Task):
     stateFolder = luigi.Parameter()
     basketFolder = luigi.Parameter()
     workingFolder = luigi.Parameter()
+
+    # Ceda Ard Finder Params. Set them to None if not used
+    startDate = luigi.OptionalParameter(default=None)
+    endDate = luigi.OptionalParameter(default=None)
+    ardFilter = luigi.OptionalParameter(default=None)
+    spatialOperator = luigi.OptionalParameter(default=None)
+    satelliteFilter = luigi.OptionalParameter(default=None)
+
+    orbit = luigi.IntParameter(default=-9999)
+    orbitDirection = luigi.Parameter(default="")
+    wkt = luigi.Parameter(default="")
+
+    def requires(self):
+        # Dynamically choose the workflow based on the presence of inputs.txt in the root of the basket folder
+        if os.path.exists(os.path.join(self.basketFolder, "inputs.txt")):
+            return self.clone(GetArdProductsFromTextFileList)
+        else:
+            # First check that the parameters are set correctly
+            for k in ["startDate", "endDate", "ardFilter", "spatialOperator", "satelliteFilter"]:
+                if self.param_kwargs.get(k) is None:
+                    raise ValueError(f"Parameter {k} is not set")
+            return self.clone(GetArdProductsFromFilters)
 
     def run(self):
         products = []

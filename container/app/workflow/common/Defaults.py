@@ -7,6 +7,8 @@ Paths = {
     "output": "/output"
 }
 
+# Unmasked indices
+Version = "v2"
 
 RFunctionRoot = "/app/r-functions"
 
@@ -18,13 +20,12 @@ class S1Indices(Enum):
         return '<%s.%s>' % (self.__class__.__name__, self.name)
 
     RVI = "RVI"
-    VVVH = "VVVH"
     VHVV = "VHVV"
     RFDI = "RFDI"
 
 
 S1IndexDefaults = {
-    "defaultIndices": [S1Indices.RVI, S1Indices.VVVH, S1Indices.VHVV, S1Indices.RFDI],
+    "defaultIndices": [S1Indices.VHVV],
     "vvBand": 1,
     "vhBand": 2,
     "threshold": 50,
@@ -37,6 +38,7 @@ class S2Indices(Enum):
 
     Brightness = "Brightness"
     EVI = "EVI"
+    EVI2 = "EVI2"
     GLI = "GLI"
     GNDVI = "GNDVI"
     NBR = "NBR"
@@ -56,7 +58,8 @@ S2IndexDefaults = {
         S2Indices.NDVI,
         S2Indices.NDWI,
         S2Indices.NDMI,
-        S2Indices.NBR
+        S2Indices.NBR,
+        S2Indices.EVI2
     ],
     "rBand": 3,
     "gBand": 2,
@@ -67,17 +70,49 @@ S2IndexDefaults = {
 }
 
 
-QcChecks = {
-    "crs": "EPSG:27700",
-    "dtype": "float32",
-    "nodata": "-9999.0",
-    "range": {
-        "S1": [-504, 504],
-        "S2": [-1, 1]
+class QcChecks:
+    _defaults = {
+        "crs": "EPSG:27700",
+        "dtype": "float32",
+        "nodata": "-9999.0",
+        "default_range": {
+            "S1": [-504, 504],
+            "S2": [-1, 1]
+        }
     }
-}
 
+    _range_checks = {
+        # Add per-index range checks here
+        S2Indices.EVI2: [-5, 5]
+    }
 
-CogProcess = {
-    "maxCogProcesss": 4
-}
+    @staticmethod
+    def get_defaults():
+        return QcChecks._defaults
+
+    @staticmethod
+    def get_range(index):
+        """
+        Get the QC range for a given ARD index
+
+        :param index: The index to get the range for
+        :type index: str or S1Indices or S2Indices
+
+        :return: The range for the given index
+        :rtype: [int, int]
+
+        :raises ValueError: If the index is not recognised
+        """
+
+        if type(index) == str:
+            if index in S1Indices.__members__:
+                index = S1Indices(index)
+            elif index in S2Indices.__members__:
+                index = S2Indices(index)
+
+        if isinstance(index, S1Indices):
+            return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S1"])
+        elif isinstance(index, S2Indices):
+            return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S2"])
+        else:
+            raise ValueError(f"Failed getting QC range. Unknown index : {index}")

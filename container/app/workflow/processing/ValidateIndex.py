@@ -20,7 +20,7 @@ class ValidateIndex(luigi.Task):
 
     index = luigi.Parameter()  # i.e. NDMI
     indexFileName = luigi.Parameter()  # i.e. S2A_20220624_lat57lon375_T30VVJ_ORB123_utm30n_osgb_NDMI.tif
-    indexFilePath = luigi.Parameter()  # i.e. /output/sentinel_2/ndmi/2022/06/24/S2A_20220624_lat57lon375_T30VVJ_ORB123_utm30n_osgb_NDMI.tif
+    indexFilePath = luigi.Parameter()  # i.e. /output/ndmi/2022/06/24/S2A_20220624_lat57lon375_T30VVJ_ORB123_utm30n_osgb_NDMI.tif
     indexQcRange = luigi.ListParameter()
     ardFile = luigi.Parameter()  # i.e. /neodc/sentinel_ard/data/sentinel_2/2022/06/24/S2A_20220624_lat57lon375_T30VVJ_ORB123_utm30n_osgb_sat.tif
 

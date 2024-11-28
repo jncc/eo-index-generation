@@ -47,15 +47,12 @@ runS1Indices<-function(filebasename, imagepath, fileout_path, vv=1, vh=2, index,
     return(rvi)
   }
 
-  # Compute VV/VH using dB values
-  VVVH_fun <- function(x){
-    vvvh <- (x[[vv]]/x[[vh]])
-    return(vvvh)
-  }
-
-  # Compute VH/VV using dB values
+  # Compute VH/VV using linear values
   VHVV_fun <- function(x){
-    vhvv <- (x[[vh]]/x[[vv]])
+    #Convert from db to linear
+    VH_linear <- 10^(x[[vh]]/10)
+    VV_linear <- 10^(x[[vv]]/10)
+    vhvv <- (VH_linear)/(VV_linear)
     return(vhvv)
   }
  
@@ -71,7 +68,6 @@ runS1Indices<-function(filebasename, imagepath, fileout_path, vv=1, vh=2, index,
   ## Create lookup table
   all_ind <- tibble::tribble(~name,~formula,
                              "RVI", RVI_fun,
-                             "VVVH", VVVH_fun,
                              "VHVV", VHVV_fun,
                              "RFDI", RFDI_fun)
 

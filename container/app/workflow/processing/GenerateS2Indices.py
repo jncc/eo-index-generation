@@ -19,7 +19,7 @@ class GenerateS2Indices(luigi.Task):
     productId = luigi.Parameter()
     indices = luigi.parameter.EnumListParameter(
         enum=defaults.S2Indices,
-        description="A comma separted list of any of Brightness,EVI,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL",
+        description="A comma separted list of any of Brightness,EVI,EVI2,GLI,GNDVI,GRVI,NBR,NDMI,NDVI,NDWI,RB,RDVI,RG,SAVI,SBL",
         default=defaults.S2IndexDefaults["defaultIndices"])
 
     def run(self):

@@ -13,13 +13,14 @@ from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputF
 from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputForS2
 from workflow.processing.ValidateIndex import ValidateIndex
 
+from workflow.common.Defaults import QcChecks
+
 log = logging.getLogger('luigi-interface')
 
 
 class ValidateIndices(luigi.Task):
     productId = luigi.Parameter()
     ardPath = luigi.Parameter()
-    indexQcRange = luigi.ListParameter()
     stateFolder = luigi.Parameter(default=defaults.Paths["state"])
     outputFolder = luigi.Parameter(default=defaults.Paths["output"])
 
@@ -37,9 +38,9 @@ class ValidateIndices(luigi.Task):
 
         failedIndices = seq(results) \
             .map(lambda x: {"index": x["index"], "qc": {
-                "crs": check_qc(x.get("crs"), defaults.QcChecks["crs"]),
-                "dtype": check_qc(x.get("dtype"), defaults.QcChecks["dtype"]),
-                "nodata": check_qc(x.get("nodata"), defaults.QcChecks["nodata"]),
+                "crs": check_qc(x.get("crs"), QcChecks.get_defaults()["crs"]),
+                "dtype": check_qc(x.get("dtype"), QcChecks.get_defaults()["dtype"]),
+                "nodata": check_qc(x.get("nodata"), QcChecks.get_defaults()["nodata"]),
                 "valid_cog": check_qc(x.get("valid_cog")),
                 "within_range": check_qc(x.get("within_range")),
                 "extent_match": check_qc(x.get("extent_match")),
@@ -54,7 +55,7 @@ class ValidateIndices(luigi.Task):
         errors = []
         for failedIndex in failedIndices:
             for k, v in failedIndex["qc"].items():
-                errors.append(f"{failedIndex['index']} {k} = {v} (Expected: {defaults.QcChecks.get(k, True)})")
+                errors.append(f"{failedIndex['index']} {k} = {v} (Expected: {QcChecks.get_defaults().get(k, True)})")
 
         if errors:
             raise ValueError("QC Check(s) Failed\n" + "\n".join(errors))
@@ -81,7 +82,7 @@ class ValidateIndices(luigi.Task):
                     index=i["indexName"],
                     indexFileName=os.path.basename(i["cogFilePath"]),
                     indexFilePath=i["cogFilePath"],
-                    indexQcRange=self.indexQcRange,
+                    indexQcRange=QcChecks.get_range(i["indexName"]),
                     ardFile=ardFile,
                     _stateFileName=f"ValidateIndexFor{self._satellite}_{i['indexName']}.json"
                 )
@@ -99,6 +100,8 @@ class ValidateIndices(luigi.Task):
         output = {
             "productId": self.productId,
             "qcPassed": True if processed_results else False,
+            "qcChecksPerformed": QcChecks.get_defaults(),
+            "perIndexRangeChecks": {k.value: v for k, v in QcChecks._range_checks.items()}
         }
 
         with self.output().open('w') as o:
@@ -113,7 +116,6 @@ class ValidateIndices(luigi.Task):
 class ValidateIndicesForS1(ValidateIndices):
 
     _satellite = "S1"
-    indexQcRange = luigi.ListParameter(default=defaults.QcChecks["range"]["S1"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_1")
 
     _stateFileName = "ValidateIndicesForS1.json"
@@ -123,7 +125,6 @@ class ValidateIndicesForS1(ValidateIndices):
 class ValidateIndicesForS2(ValidateIndices):
 
     _satellite = "S2"
-    indexQcRange = luigi.ListParameter(default=defaults.QcChecks["range"]["S2"])
     ardPath = luigi.Parameter(default=f"{defaults.ArdBasePath}/sentinel_2")
 
     _stateFileName = "ValidateIndicesForS2.json"
