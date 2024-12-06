@@ -12,6 +12,8 @@ from luigi import LocalTarget
 from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS1
 from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS2
 
+from workflow.common.Defaults import IndexVersions
+
 log = logging.getLogger('luigi-interface')
 """
 Copies the indices COGs to the output folder
@@ -29,7 +31,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
         filename = os.path.basename(cogFilePath)
 
-        outPath = os.path.join(self.outputFolder, indexName.lower(), defaults.IndexVersions.get_version(indexName), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
+        outPath = os.path.join(self.outputFolder, indexName.lower(), IndexVersions.get_version(indexName), datestamp[0:4], datestamp[4:6], datestamp[6:8], filename)
 
         return outPath
 
