@@ -1,6 +1,6 @@
 # EO Indices Generation
 
-Orchestrates and submits jobs to the JASMIN LOTUS cluster which generate indices for S1 and S2 ARD products.
+Orchestrates and submits jobs to the JASMIN LOTUS cluster which generate (unmasked) indices for S1 and S2 ARD products.
 
 ## Pre-requisites
 
@@ -37,30 +37,30 @@ apptainer build --force eo-index-container.sif docker-daemon://eo-index-containe
 
 The entire process (Orchestration + Workflow) cannot be tested locally due to the need to mount the CEDA Archive and submit jobs to LOTUS. However, individual components can be tested.
 
-Example command to orchestrate the processing of S1 indices `RVI` and `VHVV` for products between `2022-06-06` and `2022-06-07`:
+Example command to orchestrate the processing of S2 indices `NBR` and `NDMI` for products between `2022-06-06` and `2022-06-07`:
 
 (Note: Install dependencies first `pip install -r requirements.txt` and change paths accordingly)
 
 ```bash
-PYTHONPATH=. luigi --module orchestration SubmitJobsForS1 \
+PYTHONPATH=. luigi --module orchestration SubmitJobsForS2 \
   --workingFolder /workingFolder \
   --stateFolder /stateFolder \
   --templatesDir /eo-index-generation/orchestration/templates \
   --basketFolder /ignore/this/basketFolder \
   --outputFolder /ignore/this \
   --containerPath /ignore/this \
-  --indices RVI,VHVV \
+  --indices NBR,NDMI \
   --startDate 2022-06-06 \
   --endDate 2022-06-07 \
   --ardFilter '*' \
-  --satelliteFilter 'Sentinel-1A ARD, Sentinel-1B ARD' \
+  --satelliteFilter 'Sentinel-2A ARD, Sentinel-2B ARD' \
   --spatialOperator intersects \
   --testProcessing \
   --local-scheduler
 
 ```
 
-Example command to process S1 indices `RVI` and `VHVV` for a single product:
+Example command to process S2 indices `NBR` and `NDMI` for a single product:
 
 (Note: Make sure to fill in the correct bind mounts, and have all the ARD products downloaded and available in the input folder)
 
@@ -72,9 +72,9 @@ apptainer exec \
   --bind :/working \
   --bind :/tmp \
   eo-index-container.sif /app/exec.sh \
-    --module workflow.processing FinaliseS1Workflow \
-    --productId S1A_20240303_74_asc_182215_182240_VVVH_G0_GB_OSGB_RTCK_SpkRL \
-    --indices RVI,VHVV \
+    --module workflow.processing ValidateIndicesForS2 \
+    --productId S2B_20220606_lat50lon363_T30UVA_ORB080_utm30n_osgb \
+    --indices NBR,NDMI \
     --workers 2 \
     --local-scheduler
 ```

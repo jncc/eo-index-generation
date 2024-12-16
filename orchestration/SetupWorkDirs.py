@@ -50,20 +50,16 @@ class SetupWorkDirs(luigi.Task):
             workspaceName = f'{os.path.basename(self.basketFolder)}_{productName}'
             workspacePath = os.path.join(self.workingFolder, workspaceName)
 
-            if not os.path.exists(workspacePath):
-                os.makedirs(workspacePath)
+            os.makedirs(workspacePath, exist_ok=True)
 
             workspaceWorkingDir = os.path.join(workspacePath, "working")
-            if not os.path.exists(workspaceWorkingDir):
-                os.makedirs(workspaceWorkingDir)
+            os.makedirs(workspaceWorkingDir, exist_ok=True)
 
             workspaceStateDir = os.path.join(workspacePath, "state")
-            if not os.path.exists(workspaceStateDir):
-                os.makedirs(workspaceStateDir)
+            os.makedirs(workspaceStateDir, exist_ok=True)
 
             workspaceTmpDir = os.path.join(workspaceWorkingDir, "tmp")
-            if not os.path.exists(workspaceTmpDir):
-                os.makedirs(workspaceTmpDir)
+            os.makedirs(workspaceTmpDir, exist_ok=True)
 
             output["products"].append({
                 "productName": productName,

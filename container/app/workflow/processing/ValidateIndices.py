@@ -13,7 +13,7 @@ from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputF
 from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputForS2
 from workflow.processing.ValidateIndex import ValidateIndex
 
-from workflow.common.Defaults import QcChecks
+from workflow.common.Defaults import QcChecks, IndexVersions
 
 log = logging.getLogger('luigi-interface')
 
@@ -101,7 +101,8 @@ class ValidateIndices(luigi.Task):
             "productId": self.productId,
             "qcPassed": True if processed_results else False,
             "qcChecksPerformed": QcChecks.get_defaults(),
-            "perIndexRangeChecks": {k.value: v for k, v in QcChecks._range_checks.items()}
+            "perIndexRangeChecksAll": {k.value: v for k, v in QcChecks._range_checks.items()},
+            "perIndexVersionsAll": {k.value: v for k, v in IndexVersions._versions.items()},
         }
 
         with self.output().open('w') as o:

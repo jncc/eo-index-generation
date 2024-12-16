@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 Paths = {
     "input": "/input",
@@ -7,8 +8,6 @@ Paths = {
     "output": "/output"
 }
 
-# Unmasked indices
-Version = "v2"
 
 RFunctionRoot = "/app/r-functions"
 
@@ -116,3 +115,43 @@ class QcChecks:
             return QcChecks._range_checks.get(index, QcChecks._defaults["default_range"]["S2"])
         else:
             raise ValueError(f"Failed getting QC range. Unknown index : {index}")
+
+
+class IndexVersions:
+    _versions = {
+        # Add per-index versions here
+        S1Indices.VHVV: "v1",
+        S2Indices.NBR: "v2",
+        S2Indices.NDVI: "v2",
+        S2Indices.NDMI: "v2",
+        S2Indices.NDWI: "v2",
+        S2Indices.EVI2: "v2",
+    }
+
+    @staticmethod
+    def get_version(index):
+        """
+        Get the version for a given ARD index
+
+        :param index: The index to get the version for
+        :type index: str or S1Indices or S2Indices
+
+        :return: The version for the given index
+        :rtype: str
+
+        :raises ValueError: If the index is not recognised or doesn't have a version
+        """
+
+        if type(index) == str:
+            if index in S1Indices.__members__:
+                index = S1Indices(index)
+            elif index in S2Indices.__members__:
+                index = S2Indices(index)
+
+        if isinstance(index, Union[S1Indices, S2Indices]):
+            if index in IndexVersions._versions:
+                return IndexVersions._versions[index]
+            else:
+                raise ValueError(f"Index {index} exists but has no version")
+        else:
+            raise ValueError(f"Failed getting version. Unknown index : {index}")
