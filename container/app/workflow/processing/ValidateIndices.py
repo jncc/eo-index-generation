@@ -63,8 +63,8 @@ class ValidateIndices(luigi.Task):
         return True
 
     def run(self):
-        with self.input().open('r') as CopyIndicesCogsToOutput:
-            cogFiles = (json.load(CopyIndicesCogsToOutput))["indicesCogFiles"]
+        with self.input().open('r') as GenerateIndicesCogs:
+            cogFiles = (json.load(GenerateIndicesCogs))["indicesCogFiles"]
 
         datestamp = re.findall("([0-9]{8})", self.productId)[0]
 
