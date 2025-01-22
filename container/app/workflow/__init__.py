@@ -6,6 +6,6 @@ import workflow.processing.GenerateS2Index
 import workflow.processing.GenerateS2Indices
 import workflow.processing.ApplyIndicesCorrections
 import workflow.processing.GenerateIndicesCogs
-import workflow.processing.CopyIndicesCogsToOutput
 import workflow.processing.ValidateIndex
 import workflow.processing.ValidateIndices
+import workflow.processing.CopyIndicesCogsToOutput

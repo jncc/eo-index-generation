@@ -9,8 +9,11 @@ import shutil
 
 from luigi.util import requires
 from luigi import LocalTarget
+
 from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS1
 from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS2
+from workflow.processing.ValidateIndices import ValidateIndicesForS1
+from workflow.processing.ValidateIndices import ValidateIndicesForS2
 
 from workflow.common.Defaults import IndexVersions
 
@@ -37,7 +40,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
 
     def run(self):
 
-        with self.input().open('r') as generateIndicesCogs:
+        with self.input()[0].open('r') as generateIndicesCogs:
             cogFiles = (json.load(generateIndicesCogs))["indicesCogFiles"]
 
         indicesCogFiles = []
@@ -68,7 +71,7 @@ class CopyIndicesCogsToOutput(luigi.Task):
         return LocalTarget(outFile)
 
 
-@requires(GenerateIndicesCogsForS1)
+@requires(GenerateIndicesCogsForS1, ValidateIndicesForS1)
 class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
 
     _stateFileName = "CopyIndicesCogsToOutputForS1.json"
@@ -77,7 +80,7 @@ class CopyIndicesCogsToOutputForS1(CopyIndicesCogsToOutput):
         pass
 
 
-@requires(GenerateIndicesCogsForS2)
+@requires(GenerateIndicesCogsForS2, ValidateIndicesForS2)
 class CopyIndicesCogsToOutputForS2(CopyIndicesCogsToOutput):
 
     _stateFileName = "CopyIndicesCogsToOutputForS2.json"

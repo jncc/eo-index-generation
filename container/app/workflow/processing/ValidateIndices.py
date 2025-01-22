@@ -9,8 +9,8 @@ from functional import seq
 from luigi.util import requires
 from luigi import LocalTarget
 
-from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputForS1
-from workflow.processing.CopyIndicesCogsToOutput import CopyIndicesCogsToOutputForS2
+from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS1
+from workflow.processing.GenerateIndicesCogs import GenerateIndicesCogsForS2
 from workflow.processing.ValidateIndex import ValidateIndex
 
 from workflow.common.Defaults import QcChecks, IndexVersions
@@ -113,7 +113,7 @@ class ValidateIndices(luigi.Task):
         return LocalTarget(outFile)
 
 
-@requires(CopyIndicesCogsToOutputForS1)
+@requires(GenerateIndicesCogsForS1)
 class ValidateIndicesForS1(ValidateIndices):
 
     _satellite = "S1"
@@ -122,7 +122,7 @@ class ValidateIndicesForS1(ValidateIndices):
     _stateFileName = "ValidateIndicesForS1.json"
 
 
-@requires(CopyIndicesCogsToOutputForS2)
+@requires(GenerateIndicesCogsForS2)
 class ValidateIndicesForS2(ValidateIndices):
 
     _satellite = "S2"
