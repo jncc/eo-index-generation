@@ -16,7 +16,7 @@ ENV TZ=Europe/London
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install package requirements
-# Note r-recommended is a meta-package, must pin all its dependencies to be compatible with R 4.4.1 ...
+# Note r-recommended and r-base are meta-packages, must pin all dependencies to be compatible with R 4.4.1 ...
 # ... otherwise it'll try to install the latest versions of which some are incompatible
 RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
     && gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 871920D1991BC93C \
@@ -43,6 +43,7 @@ RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc |
     r-cran-codetools=0.2-19-1.2204.0 \
     r-cran-matrix=1.7-1-1.2204.0 \
     r-recommended=4.4.1-3.2204.0 \
+    r-base=4.4.1-3.2204.0 \
     gdal-bin \
     libgdal-dev \
     curl \
