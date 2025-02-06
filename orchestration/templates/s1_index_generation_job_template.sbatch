@@ -1,5 +1,7 @@
 #!/bin/bash
-#SBATCH -p par-single
+#SBATCH --account defra_eo
+#SBATCH --qos highres
+#SBATCH --partition highres
 #SBATCH --cpus-per-task=$indexCount
 #SBATCH --time=04:00:00
 #SBATCH --mem=64G
