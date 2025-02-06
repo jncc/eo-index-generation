@@ -24,20 +24,23 @@ class SubmitJobs(luigi.Task):
     testProcessing = luigi.BoolParameter(default=False)
 
     templateFilename = ""
+    templateFilenameParallel = ""
     platform = ""
     sbatchFileName = ""
     outfile = ""
 
     def run(self):
         products = []
+        indices = self.indices.split(",")
+
         with self.input().open('r') as setupWorkDirs:
             products = json.load(setupWorkDirs)["products"]
 
-        with open(os.path.join(self.templatesDir, self.templateFilename), "r") as t:
+        templateFilepath = os.path.join(self.templatesDir, self.templateFilename if len(indices) == 1 else self.templateFilenameParallel)
+        with open(templateFilepath, "r") as t:
             sbatchTemplate = Template(t.read())
 
         tasks = []
-        indices = self.indices.split(",")
 
         for product in products:
             commandArgs = {
@@ -93,6 +96,7 @@ class SubmitJobs(luigi.Task):
 @requires(SetupWorkDirs)
 class SubmitJobsForS1(SubmitJobs):
     templateFilename = "s1_index_generation_job_template.sbatch"
+    templateFilenameParallel = "s1_parallel_index_generation_job_template.sbatch"
     platform = "S1"
     sbatchFileName = "s1_index_generation_job.sbatch"
     outfile = "SubmitJobsForS1.json"
@@ -101,6 +105,7 @@ class SubmitJobsForS1(SubmitJobs):
 @requires(SetupWorkDirs)
 class SubmitJobsForS2(SubmitJobs):
     templateFilename = "s2_index_generation_job_template.sbatch"
+    templateFilenameParallel = "s2_parallel_index_generation_job_template.sbatch"
     platform = "S2"
     sbatchFileName = "s2_index_generation_job.sbatch"
     outfile = "SubmitJobsForS2.json"
