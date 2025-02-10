@@ -49,7 +49,7 @@ class SubmitJobs(luigi.Task):
                 "tmpMount": product["tmpDir"],
                 "containerPath": self.containerPath,
                 "productId": product["productName"],
-                "indexCount": len(indices),
+                "cpuCount": max(2, len(indices)),
                 "indices": f"--indices {self.indices}",
             }
 
