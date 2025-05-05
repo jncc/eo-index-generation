@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account defra_eo
-#SBATCH --qos highres
-#SBATCH --partition highres
+#SBATCH --qos high
+#SBATCH --partition standard
 #SBATCH --cpus-per-task=$cpuCount
 #SBATCH --time=04:00:00
 #SBATCH --mem=64G
